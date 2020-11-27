@@ -50,7 +50,21 @@ RUN git clone https://github.com/dschori/velodyne.git
 WORKDIR /workspace/sensors
 RUN rosdep install --from-paths src --ignore-src -r -y
 WORKDIR /workspace/sensors
-RUN /bin/bash -c '. /opt/ros/noetic/setup.bash; cd /workspace/sensors; catkin build -j1'
+RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /workspace/sensors; catkin build -j2'
 WORKDIR /workspace
+
+
+# Cartographer
+RUN apt-get update && \
+    apt-get install -y python3-wstool python3-rosdep ninja-build stow
+RUN mkdir -p /workspace/cartographer_ws
+WORKDIR /workspace/cartographer_ws
+RUN wstool init src && \
+    wstool merge -t src https://raw.githubusercontent.com/cartographer-project/cartographer_ros/master/cartographer_ros.rosinstall && \
+    wstool update -t src
+RUN rosdep install --from-paths src --ignore-src -y
+RUN src/cartographer/scripts/install_abseil.sh
+RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /workspace/cartographer_ws; catkin build -j2'
+
 
 
