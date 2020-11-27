@@ -1,0 +1,1 @@
+sudo docker run -it --privileged --net=host -v /home/dschori/realsense/:/home/workspace ros-noetic-realsense bash

@@ -1,0 +1,47 @@
+# this dockerfile roughly follows the 'Installing from source' from:
+#   http://wiki.ros.org/noetic/Installation/Source
+#
+ARG BASE_IMAGE=arm64v8/ros:melodic
+FROM ${BASE_IMAGE}
+
+ARG ROS_PKG=ros_base
+ENV ROS_DISTRO=melodic
+ENV ROS_ROOT=/opt/ros/${ROS_DISTRO}
+ENV ROS_PYTHON_VERSION=3
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /workspace
+
+# add the ROS deb repo to the apt sources list
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+          git \
+	  cmake \
+	  build-essential \
+	  curl \
+	  wget \ 
+	  gnupg2 \
+	  lsb-release \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key &&\
+    add-apt-repository "deb http://realsense-hw-public.s3.amazonaws.com/Debian/apt-repo bionic main" -u &&\
+   apt-get install apt-utils -y &&\
+   apt-get install librealsense2-utils librealsense2-dev -y
+
+RUN mkdir -p src
+
+WORKDIR /workspace/src
+
+RUN git clone https://github.com/dschori/realsense-ros.git
+
+WORKDIR /workspace/
+
+RUN rosdep install --from-paths src --ignore-src -r -y
+
+
+WORKDIR /
