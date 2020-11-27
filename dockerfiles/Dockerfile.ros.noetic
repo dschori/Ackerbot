@@ -50,6 +50,7 @@ RUN git clone https://github.com/dschori/velodyne.git
 WORKDIR /workspace/sensors
 RUN rosdep install --from-paths src --ignore-src -r -y
 WORKDIR /workspace/sensors
-RUN /bin/bash -c '. /opt/ros/noetic/setup.bash; cd /workspace; catkin build -j1'
+RUN /bin/bash -c '. /opt/ros/noetic/setup.bash; cd /workspace/sensors; catkin build -j1'
+WORKDIR /workspace
 
 

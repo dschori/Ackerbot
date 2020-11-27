@@ -1,0 +1,3 @@
+Symlinking /workspace/catkin_ws/devel/share/sensors/cmake/sensorsConfig-version.cmake
+Symlinking /workspace/catkin_ws/devel/share/sensors/cmake/sensorsConfig.cmake
+Symlinking /workspace/catkin_ws/devel/lib/pkgconfig/sensors.pc

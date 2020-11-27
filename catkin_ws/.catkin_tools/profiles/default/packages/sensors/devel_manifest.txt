@@ -1,0 +1,5 @@
+sensors
+/workspace/catkin_ws/devel/.private/sensors/cmake.lock /workspace/catkin_ws/devel/./cmake.lock
+/workspace/catkin_ws/devel/.private/sensors/share/sensors/cmake/sensorsConfig-version.cmake /workspace/catkin_ws/devel/share/sensors/cmake/sensorsConfig-version.cmake
+/workspace/catkin_ws/devel/.private/sensors/share/sensors/cmake/sensorsConfig.cmake /workspace/catkin_ws/devel/share/sensors/cmake/sensorsConfig.cmake
+/workspace/catkin_ws/devel/.private/sensors/lib/pkgconfig/sensors.pc /workspace/catkin_ws/devel/lib/pkgconfig/sensors.pc
