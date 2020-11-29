@@ -33,7 +33,8 @@ RUN apt-get update && \
     apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key &&\
     add-apt-repository "deb http://realsense-hw-public.s3.amazonaws.com/Debian/apt-repo bionic main" -u &&\
     apt-get install apt-utils -y &&\
-    apt-get install librealsense2-utils librealsense2-dev -y
+    apt-get install librealsense2-utils librealsense2-dev -y &&\
+    apt-get install ros-noetic-joint-state-publisher -y
 
 # Catkin Tools (catkin build)
 WORKDIR /
@@ -42,29 +43,25 @@ WORKDIR /catkin_tools
 RUN pip3 install -r requirements.txt --upgrade && \
     python3 setup.py install --record install_manifest.txt
 
+RUN mkdir -p /workspace/catkin_ws/src
+
 # Realsense + Velodyne
-RUN mkdir -p /workspace/sensors/src
-WORKDIR /workspace/sensors/src
+WORKDIR /workspace/catkin_ws/src
 RUN git clone https://github.com/dschori/realsense-ros.git
 RUN git clone https://github.com/dschori/velodyne.git
-WORKDIR /workspace/sensors
-RUN rosdep install --from-paths src --ignore-src -r -y
-WORKDIR /workspace/sensors
-RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /workspace/sensors; catkin build -j2'
-WORKDIR /workspace
-
 
 # Cartographer
 RUN apt-get update && \
     apt-get install -y python3-wstool python3-rosdep ninja-build stow
-RUN mkdir -p /workspace/cartographer_ws
-WORKDIR /workspace/cartographer_ws
+WORKDIR /workspace/catkin_ws
 RUN wstool init src && \
     wstool merge -t src https://raw.githubusercontent.com/cartographer-project/cartographer_ros/master/cartographer_ros.rosinstall && \
     wstool update -t src
-RUN rosdep install --from-paths src --ignore-src -y
+
+# Install Dependencies and Build
+RUN rosdep install --from-paths src --ignore-src -r -y
 RUN src/cartographer/scripts/install_abseil.sh
-RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /workspace/cartographer_ws; catkin build -j2'
+RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /workspace/catkin_ws; catkin build -j2'
 
 
 

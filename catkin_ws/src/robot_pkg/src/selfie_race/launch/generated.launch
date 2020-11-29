@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  <env name="GAZEBO_RESOURCE_PATH" value="$(find selfie_gazebo)/worlds/generator_world/"/>
+  <node pkg="xacro" name="xacro_conversion" type="xacro.py" args="--inorder -o selfie.urdf $(find selfie_description)/urdf/selfie.xacro" />
+  
+  <include file="$(find selfie_gazebo)/launch/selfie.launch">
+    <arg name="world_name" value="generator_world/world"/>
+    <arg name="x" value="0.2"/>
+    <arg name="y" value="-0.2"/>
+    <arg name="Y" value="0"/>    
+  </include>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find selfie_description)/data/rviz_config/camera_laser_view.rviz"/>
+<!--  <node pkg="selfie_race" name="control_node" type="control.py" output="screen"/>   -->
+<!--  <node pkg="selfie_race" name="sim_connector_node" type="sim_connector.py"/> -->
+<!-- <node pkg="selfie_race" name="levine_demo_node" type="levineDemo.py"/> -->
+
+</launch>

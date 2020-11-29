@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<robot name="movable_box">
+
+  <!-- the model -->
+  <link name="movable_box_link">
+    <inertial>
+      <mass value="50" />
+      <origin xyz="0 0 0.1" />
+      <inertia ixx="50.0" ixy="0.0" ixz="0.0"
+        iyy="50.0" iyz="0.0"
+        izz="50.0" />
+    </inertial>
+    <visual name="movable_box_visual">
+      <geometry>
+        <box size="0.2 0.2 0.2" /> <!-- does not need to match collision -->
+      </geometry>
+    </visual>
+    <collision name="movable_box_collision">
+      <geometry>
+        <box size= "0.2 0.2 0.2"/>
+      </geometry>
+      <surface>
+        <friction>
+          <ode>
+            <mu>0</mu>
+            <mu2>0</mu2>
+          </ode>
+        </friction>
+      </surface>
+    </collision>
+  </link>
+
+  <gazebo>
+    <plugin name="object_controller" filename="libgazebo_ros_planar_move.so">
+      <commandTopic>cmd_vel</commandTopic>
+      <odometryTopic>odom</odometryTopic>
+      <odometryFrame>odom</odometryFrame>
+      <odometryRate>20.0</odometryRate>
+      <robotBaseFrame>movable_box_link</robotBaseFrame>
+    </plugin>
+  </gazebo>
+
+</robot>
+

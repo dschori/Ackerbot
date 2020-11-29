@@ -3,6 +3,12 @@ sudo docker build -t ros-noetic-realsense -f Dockerfile.ros.noetic .
 
 
 # start sensors (realsense + velodyne)
-sudo docker run -it --privileged --net=host -v /home/dschori/MasterThesis/catkin_ws/src/sensors:/workspace/sensors/src/sensors ros-noetic-realsense bash
+sudo docker run -it --privileged --net=host \
+-v /home/dschori/MasterThesis/catkin_ws/src/mapping_pkg:/workspace/catkin_ws/src/mapping_pkg \
+-v /home/dschori/MasterThesis/catkin_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
+-v /home/dschori/MasterThesis/catkin_ws/src/sensors_pkg:/workspace/catkin_ws/src/sensors_pkg \
+ros-noetic-realsense bash
+
+
 
 catkin_make_isolated --install --use-ninja -j1

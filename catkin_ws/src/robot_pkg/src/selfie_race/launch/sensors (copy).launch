@@ -1,0 +1,25 @@
+<launch>
+  <arg name="model" default="$(find selfie_description)/urdf/weed_bot.urdf"/>
+  <arg name="gui" default="false" />
+  <arg name="rvizconfig" default="$(find selfie_race)/rviz/weed_bot.rviz" />
+
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+  <node if="$(arg gui)" name="joint_state_publisher" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />
+  <node unless="$(arg gui)" name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- Launch Realsense T265 Node -->
+  <include file="$(find realsense2_camera)/launch/rs_t265.launch" />
+
+  <!-- Launch T265 Odometry Converter Node -->
+  <node pkg="selfie_race" type="t265_odom_converter.py" name="t265_odom_converter"> </node>
+
+  <!-- Create Static Transform from T265 to Robot odom -->
+  <!--node pkg="tf" type="static_transform_publisher" name="t265_to_odom_tf" args="0 0 0 0 0 0 odom_t265 odom 10"></node-->
+
+  <!-- Launch Velodyne Node -->
+  <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+  <node pkg="tf" type="static_transform_publisher" name="laser_to_velodyne" args="0 0 0 0 0 0 laser velodyne 10"></node>
+
+</launch>

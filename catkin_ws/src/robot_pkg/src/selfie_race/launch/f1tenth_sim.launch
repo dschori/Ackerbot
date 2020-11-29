@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find selfie_gazebo)/launch/selfie_v2.launch">
+        <arg name="world_name" value="f1tenth_v1"/>
+  </include>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find selfie_description)/data/rviz_config/symulator.rviz"/>
+
+
+  <node name="sim_manager" pkg="selfie_sim_control" type="sim_manager.py" output="screen">
+  <!--  <param name="sim_speed" value="0.2"/> -->
+  </node>
+
+
+
+</launch>

@@ -1,8 +1,0 @@
-prefix=/workspace/catkin_ws/install
-
-Name: sensors
-Description: Description of sensors
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

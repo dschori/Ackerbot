@@ -1,0 +1,7 @@
+<launch>
+  <!-- Launch Velodyne Node -->
+  <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+
+  <!-- Launch Realsense T265 Node -->
+  <include file="$(find realsense2_camera)/launch/rs_t265.launch" />
+</launch>
