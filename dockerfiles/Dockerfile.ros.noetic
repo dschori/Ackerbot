@@ -63,5 +63,9 @@ RUN rosdep install --from-paths src --ignore-src -r -y
 RUN src/cartographer/scripts/install_abseil.sh
 RUN /bin/bash -c '. /opt/ros/${ROS_DISTRO}/setup.bash; cd /workspace/catkin_ws; catkin build -j2'
 
+# PCA9685 and ServoKit Libraries
+RUN pip3 install adafruit-circuitpython-pca9685 && \
+    pip3 install adafruit-circuitpython-servokit
+
 
 

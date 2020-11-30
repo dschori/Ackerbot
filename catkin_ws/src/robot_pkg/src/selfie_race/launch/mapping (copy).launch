@@ -1,7 +1,4 @@
 <launch>
-
-<node pkg="tf" type="static_transform_publisher" name="base_to_tracking_frame" args="0 0 0 0 0 1.57 velodyne camera_t265_imu_optical_frame 100"></node>
-
 <node name='cartographer_node' pkg='cartographer_ros' type='cartographer_node' args='
     -configuration_directory
       $(find selfie_race)/config
@@ -10,6 +7,8 @@
   </node>
 
 <node name='cartographer_occupancy_grid_node' pkg='cartographer_ros' type='cartographer_occupancy_grid_node' args='-resolution 0.05'/>
+
+<node pkg="tf" type="static_transform_publisher" name="base_to_tracking_frame" args="0 0 0 0 0 1.57 base_link camera_t265_imu_optical_frame 10"></node>
 
 <node pkg="tf" type="static_transform_publisher" name="odom_to_pose_frame" args="0 0 0 0 0 0 odom camera_t265_pose_frame 10"></node>
 

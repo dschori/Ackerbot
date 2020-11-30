@@ -9,6 +9,6 @@ sudo docker run -it --privileged --net=host \
 -v /home/dschori/MasterThesis/catkin_ws/src/sensors_pkg:/workspace/catkin_ws/src/sensors_pkg \
 ros-noetic-realsense bash
 
-
+rosbag record -a -O data.bag -x "/camera_t265/fisheye1/(.*)|/camera_t265/fisheye2/(.*)" --split --size 1024
 
 catkin_make_isolated --install --use-ninja -j1

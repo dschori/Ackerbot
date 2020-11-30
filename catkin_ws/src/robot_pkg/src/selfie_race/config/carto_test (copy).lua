@@ -20,7 +20,7 @@ options = {
   trajectory_builder = TRAJECTORY_BUILDER,
   map_frame = "map",
   tracking_frame = "camera_t265_imu_optical_frame",
-  published_frame = "velodyne",
+  published_frame = "base_link",
   odom_frame = "odom",
   provide_odom_frame = true,
   publish_frame_projected_to_2d = false,
@@ -45,46 +45,15 @@ options = {
 MAP_BUILDER.use_trajectory_builder_2d = true
 MAP_BUILDER.num_background_threads = 4
 
-
---Local Slam
---there are more parameters to tune, but this ones are the ones I found more impactful
-
---this one tries to match two laser scans together to estimate the position,
---I think if not on it will rely more on wheel odometry
 TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true
-
--- tune this value to the amount of samples (i think revolutions) to average over
---before estimating te position of the walls and features in the environment
-TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 2
-
---use or not use IMU, if used, the tracking_frame should be set to the one that the IMU is on
 TRAJECTORY_BUILDER_2D.use_imu_data = true
+TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.linear_search_window = 0.15
+TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.angular_search_window = math.rad(35.)
+TRAJECTORY_BUILDER_2D.imu_gravity_time_constant = 1
 
---This is the scan matcher and the weights to different assumptions
---occupied_space gives more weight to the 'previous' features detected.
-TRAJECTORY_BUILDER_2D.ceres_scan_matcher.occupied_space_weight = 20.
-TRAJECTORY_BUILDER_2D.ceres_scan_matcher.translation_weight = 100.
-TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight = 40.
+POSE_GRAPH.optimization_problem.huber_scale = 1e2
 
---this will help continue making the map while the robot is static
---default time is 5 seconds
-TRAJECTORY_BUILDER_2D.motion_filter.max_time_seconds = 0.1
-
---imu configuration parameters
-TRAJECTORY_BUILDER_2D.imu_gravity_time_constant = 0.5
-
-
---map output parameters
-
---Global Slam
---Setting POSE_GRAPH.optimize_every_n_nodes to 0 is a handy way
---to disable global SLAM and concentrate on the behavior of local SLAM.
---This is usually one of the first thing to do to tune Cartographer.
-POSE_GRAPH.optimize_every_n_nodes = 0 --90 default
-POSE_GRAPH.optimization_problem.odometry_rotation_weight = 10
-POSE_GRAPH.optimization_problem.odometry_translation_weight = 1.
-POSE_GRAPH.optimization_problem.fixed_frame_pose_translation_weight = 1e-1
-POSE_GRAPH.optimization_problem.fixed_frame_pose_rotation_weight = 1e-1
+POSE_GRAPH.optimize_every_n_nodes = 0
 
 
 return options
