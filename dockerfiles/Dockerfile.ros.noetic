@@ -41,6 +41,7 @@ RUN apt-get update && \
     apt-get install ros-noetic-move-base &&\
     apt-get install ros-noetic-global-planner &&\
     apt-get install ros-noetic-amcl &&\
+    apt-get install ros-noetic-teb-local-planner
 
 # Catkin Tools (catkin build)
 WORKDIR /
