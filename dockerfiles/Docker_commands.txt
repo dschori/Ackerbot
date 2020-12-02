@@ -7,8 +7,11 @@ sudo docker run -it --privileged --net=host \
 -v /home/dschori/MasterThesis/catkin_ws/src/mapping_pkg:/workspace/catkin_ws/src/mapping_pkg \
 -v /home/dschori/MasterThesis/catkin_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
 -v /home/dschori/MasterThesis/catkin_ws/src/sensors_pkg:/workspace/catkin_ws/src/sensors_pkg \
+-v /home/dschori/MasterThesis/catkin_ws/build:/workspace/catkin_ws/build \
+-v /home/dschori/MasterThesis/catkin_ws/devel:/workspace/catkin_ws/devel \
+-v /home/dschori/MasterThesis/catkin_ws/logs:/workspace/catkin_ws/logs \
 ros-noetic-realsense bash
 
 rosbag record -a -O data.bag -x "/camera_t265/fisheye1/(.*)|/camera_t265/fisheye2/(.*)" --split --size 1024
 
-catkin_make_isolated --install --use-ninja -j1
+rosrun map_server map_saver -f /home/dschori/MasterThesis/catkin_ws/src/robot_pkg/maps/indoor
