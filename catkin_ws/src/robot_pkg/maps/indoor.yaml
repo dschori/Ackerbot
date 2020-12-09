@@ -1,6 +1,6 @@
 image: /workspace/catkin_ws/src/robot_pkg/maps/indoor.pgm
 resolution: 0.050000
-origin: [-4.030440, -0.902873, 0.000000]
+origin: [-12.750000, -13.056192, 0.000000]
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196

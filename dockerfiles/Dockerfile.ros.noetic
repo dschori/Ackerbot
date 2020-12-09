@@ -35,13 +35,13 @@ RUN apt-get update && \
     apt-get install apt-utils -y &&\
     apt-get install librealsense2-utils librealsense2-dev -y &&\
     apt-get install ros-noetic-joint-state-publisher -y &&\
-    apt-get install ros-noetic-teleop-twist-keyboard &&\
-    apt-get install ros-noetic-ackermann-msgs &&\
-    apt-get install ros-noetic-map-server &&\
-    apt-get install ros-noetic-move-base &&\
-    apt-get install ros-noetic-global-planner &&\
-    apt-get install ros-noetic-amcl &&\
-    apt-get install ros-noetic-teb-local-planner
+    apt-get install ros-noetic-teleop-twist-keyboard -y &&\
+    apt-get install ros-noetic-ackermann-msgs -y &&\
+    apt-get install ros-noetic-map-server -y &&\
+    apt-get install ros-noetic-move-base -y &&\
+    apt-get install ros-noetic-global-planner -y &&\
+    apt-get install ros-noetic-amcl -y &&\
+    apt-get install ros-noetic-teb-local-planner -y
 
 # Catkin Tools (catkin build)
 WORKDIR /

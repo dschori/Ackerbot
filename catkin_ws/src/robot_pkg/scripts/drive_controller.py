@@ -12,6 +12,7 @@ class Controller:
         self.kit = ServoKit(channels=16)
         self.steering_angle = 0.0
         self.speed = 0.0
+        rospy.loginfo('Drive Controller Started')
 
     def ackermann_cmd_sub(self, msg):
         self.steering_angle = msg.drive.steering_angle
@@ -19,11 +20,11 @@ class Controller:
         self.steering_angle = min(1, self.steering_angle)
         self.steering_angle = max(-1, self.steering_angle)
         if self.speed > 0.02:
-            self.speed = 0.3
+            self.speed = max(0.40, self.speed)
         if self.speed < -0.02:
-            self.speed = -0.3
-        self.speed = min(0.4, self.speed)
-        self.speed = max(-0.4, self.speed)
+            self.speed = min(-0.40, self.speed)
+        self.speed = min(0.6, self.speed)
+        self.speed = max(-0.6, self.speed)
 
     def translate(self, value, leftMin, leftMax, rightMin, rightMax):
         # Figure out how 'wide' each range is
@@ -42,9 +43,9 @@ class Controller:
         rospy.Subscriber("/ackermann_cmd", AckermannDriveStamped, self.ackermann_cmd_sub, queue_size=1)
         while not rospy.is_shutdown():
             current_time = rospy.Time.now()
-            print("angle: {}, speed: {}".format(self.steering_angle, self.speed))
+            #print("angle: {}, speed: {}".format(self.steering_angle, self.speed))
 
-            print(self.translate(self.steering_angle, -1, 1, 75, 175))
+            #print(self.translate(self.steering_angle, -1, 1, 75, 175))
             self.kit.servo[0].angle = self.translate(self.steering_angle, 1, -1, 75, 175)
             
             self.kit.continuous_servo[15].throttle = -self.speed
