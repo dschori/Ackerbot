@@ -1,0 +1,19 @@
+
+    material Sign/stvo-205
+    {
+        technique
+        {
+            pass
+            {
+                scene_blend alpha_blend
+                depth_write off
+
+                texture_unit
+                {
+                    texture sign-stvo-205.png
+                    filtering trilinear
+                }
+            }
+        }
+    }
+    

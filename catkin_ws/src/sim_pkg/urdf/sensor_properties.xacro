@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<robot name="selfie" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="camera_params">
+    <horizontal_fov>1.3962634</horizontal_fov>     <!--0.8709216071359963-->
+    <image>
+      <width>640</width>    <!-- 640 -->
+      <height>480</height>     <!-- 480-->
+      <format>B8G8R8</format>
+    </image>
+    <clip>
+      <near>0.02</near>
+      <far>300</far>
+    </clip>
+    <noise>
+      <type>gaussian</type>
+      <mean>0.0</mean>
+      <stddev>0.007</stddev>
+    </noise>
+  </xacro:macro>
+
+  <xacro:macro name="camera_plugin_params">
+    <alwaysOn>true</alwaysOn>
+    <updateRate>30</updateRate>    <!-- 30 -->
+    <cameraName>/main_camera</cameraName>
+    <imageTopicName>/image_raw</imageTopicName>
+    <cameraInfoTopicName>/camera_info</cameraInfoTopicName>
+    <frameName>camera_link</frameName>
+    <hackBaseline>0</hackBaseline><!-- set this to 0.12 for the second camera -->
+    <distortionK1>0.0</distortionK1>
+    <distortionK2>0.0</distortionK2>
+    <distortionK3>0.0</distortionK3>
+    <distortionT1>0.0</distortionT1>
+    <distortionT2>0.0</distortionT2>
+  </xacro:macro>
+
+  <xacro:macro name="lens_joint_pose">
+    <origin xyz="0 0 0.35" rpy="0 0.26 0"/>  <!--26-->
+    <parent link="base_camera_link"/>
+    <child link="camera_link"/>
+    <axis xyz="0 0 1" />
+  </xacro:macro>
+
+  <xacro:macro name="lidar_pose">
+    <origin xyz="0.2 0.0 0.075" rpy="0 0 0"/>
+    <parent link="chassis" />
+    <child link="left_laser" />
+    <axis xyz="0 0 1" />
+  </xacro:macro>
+
+  <xacro:macro name="lidar_params">
+    <pose>0 0 0.0124 0 0 0</pose>
+    <visualize>true</visualize>
+    <update_rate>40</update_rate>
+    <ray>
+      <scan>
+        <horizontal>
+          <samples>720</samples>
+          <resolution>1</resolution>
+          <min_angle>-2.3561944902</min_angle>
+          <max_angle>2.3561944902</max_angle>
+        </horizontal>
+      </scan>
+      <range>
+        <min>0.1</min>
+        <max>20.0</max>
+        <resolution>0.01</resolution>
+      </range>
+      <noise>
+        <type>gaussian</type>
+        <mean>0.0</mean>
+        <stddev>0.01</stddev>
+      </noise>
+    </ray>
+  </xacro:macro>
+</robot>

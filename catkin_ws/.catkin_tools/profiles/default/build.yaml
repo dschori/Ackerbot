@@ -10,8 +10,7 @@ extends: null
 install: false
 install_space: install
 isolate_install: false
-jobs_args:
-- -j1
+jobs_args: []
 licenses: TODO
 log_space: logs
 maintainers: []

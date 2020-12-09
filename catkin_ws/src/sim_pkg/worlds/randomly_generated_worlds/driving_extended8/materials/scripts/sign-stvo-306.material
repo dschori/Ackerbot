@@ -1,0 +1,19 @@
+
+    material Sign/stvo-306
+    {
+        technique
+        {
+            pass
+            {
+                scene_blend alpha_blend
+                depth_write off
+
+                texture_unit
+                {
+                    texture sign-stvo-306.png
+                    filtering trilinear
+                }
+            }
+        }
+    }
+    

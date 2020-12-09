@@ -1,0 +1,17 @@
+
+    material Tile/3556d1dc2573955860e3ae703b0019a9d0b9ff953e129ea796a93fd3a3735ff9
+    {
+        technique
+        {
+            pass
+            {
+                texture_unit
+                {
+                    texture tile-3556d1dc2573955860e3ae703b0019a9d0b9ff953e129ea796a93fd3a3735ff9.png PF_L8
+                    filtering anisotropic
+                    max_anisotropy 16
+                }
+            }
+        }
+    }
+    

@@ -1,0 +1,7 @@
+<launch>
+  <group ns="movable_box">
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find selfie_description)/urdf/movable_box.urdf -urdf -model movable_box -x 0.0 -y 0.0 -z 0.01"/>
+    <node name="kb" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py"/>
+  </group>
+</launch>
+

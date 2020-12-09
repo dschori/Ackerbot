@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <world name="carollo_track_v2">
+    <include>
+      <uri>model://selfie_description/models/carollo_track_v2</uri>
+      <name>track</name>
+      <pose>12 5 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+      <pose>0 0 10 0 0 0</pose>
+      <name>sun</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 3.4 -0.44 0.1 0 0 0</pose>
+    	<name>box1</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 3.7 -0.43 0.1 0 0 0</pose>
+    	<name>box2</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 4.1 -0.42 0.1 0 0 0</pose>
+    	<name>box3</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 4.5 -0.47 0.1 0 0 0</pose>
+    	<name>box4</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 5.0 -0.41 0.1 0 0 0</pose>
+    	<name>box5</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 5.6 -0.46 0.1 0 0 0</pose>
+    	<name>box6</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 6.3 -0.42 0.1 0 0 0</pose>
+    	<name>box7</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 7.0 -0.43 0.1 0 0 0</pose>
+    	<name>box8</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 7.8 -0.45 0.1 0 0 0</pose>
+    	<name>box9</name>
+    </include>
+    
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 8.8 -0.42 0.1 0 0 0</pose>
+    	<name>box10</name>
+
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 7.12 0.8 0.1 0 0 0</pose>
+    	<name>box11</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 6.40 0.75 0.1 0 0 0</pose>
+    	<name>box12</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 5.63 0.81 0.1 0 0 0</pose>
+    	<name>box13</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 5.22 0.73 0.1 0 0 0</pose>
+    	<name>box14</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 4.52 0.66 0.1 0 0 0</pose>
+    	<name>box15</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 7.1 2.1 0.1 0 0 0</pose>
+    	<name>box16</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 3.8 3.9 0.1 0 0 0</pose>
+    	<name>box17</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 4.58 4.35 0.1 0 0 0</pose>
+    	<name>box18</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 5.6 7.3 0.1 0 0 0</pose>
+    	<name>box19</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 4.54 8.8 0.1 0 0 0</pose>
+    	<name>box20</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 9.8 8.71 0.1 0 0 0</pose>
+    	<name>box21</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 12.85 0.5 0.1 0 0 0</pose>
+    	<name>box22</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 13.66 3.76 0.1 0 0 0</pose>
+    	<name>box23</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 12.93 5.82 0.1 0 0 0</pose>
+    	<name>box24</name>
+    </include>
+    
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 13.84 7.31 0.1 0 0 0</pose>
+    	<name>box25</name>
+
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 16.35 4.6 0.1 0 0 0</pose>
+    	<name>box26</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 18.12 4.72 0.1 0 0 0</pose>
+    	<name>box27</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 17.25 7.2 0.1 0 0 0</pose>
+    	<name>box28</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 20.2 1.56 0.1 0 0 0</pose>
+    	<name>box29</name>
+    </include>
+    <include>
+    	<uri>model://selfie_description/models/box</uri>
+    	<pose> 20.81 8.07 0.1 0 0 0</pose>
+    	<name>box30</name>
+    </include>
+  </world>
+</sdf>

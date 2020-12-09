@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <world name="easy_track2">
+    <include>
+      <uri>model://selfie_description/models/easy_track2</uri>
+      <name>track</name>
+      <pose>2.75 4.73 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+      <pose>0 0 10 0 0 0</pose>
+      <name>sun</name>
+    </include>
+  </world>
+</sdf>

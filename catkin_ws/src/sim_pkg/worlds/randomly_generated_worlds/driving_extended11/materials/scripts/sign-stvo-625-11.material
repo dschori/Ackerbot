@@ -1,0 +1,19 @@
+
+    material Sign/stvo-625-11
+    {
+        technique
+        {
+            pass
+            {
+                scene_blend alpha_blend
+                depth_write off
+
+                texture_unit
+                {
+                    texture sign-stvo-625-11.png
+                    filtering trilinear
+                }
+            }
+        }
+    }
+    

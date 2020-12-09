@@ -1,0 +1,19 @@
+
+    material Sign/stvo-274.2
+    {
+        technique
+        {
+            pass
+            {
+                scene_blend alpha_blend
+                depth_write off
+
+                texture_unit
+                {
+                    texture sign-stvo-274.2.png
+                    filtering trilinear
+                }
+            }
+        }
+    }
+    

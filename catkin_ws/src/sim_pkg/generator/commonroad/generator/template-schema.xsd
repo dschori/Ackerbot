@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:simpleType name="lineType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="solid" />
+            <xs:enumeration value="dashed" />
+            <xs:enumeration value="missing" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="anchorPosition">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="left" />
+            <xs:enumeration value="center" />
+            <xs:enumeration value="right" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="trafficSignType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="stvo-306" />
+            <xs:enumeration value="stvo-205" />
+            <xs:enumeration value="stvo-206" />
+            <xs:enumeration value="stvo-208" />
+            <xs:enumeration value="stvo-276" />
+            <xs:enumeration value="stvo-280" />
+            <xs:enumeration value="stvo-274.1" />
+            <xs:enumeration value="stvo-274.2" />
+            <xs:enumeration value="stvo-350-10" />
+            <xs:enumeration value="stvo-209-10" />
+            <xs:enumeration value="stvo-209-20" />
+            <xs:enumeration value="stvo-625-10" />
+            <xs:enumeration value="stvo-625-11" />
+            <xs:enumeration value="stvo-625-20" />
+            <xs:enumeration value="stvo-625-21" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="line">
+        <xs:sequence />
+        <xs:attribute name="length" type="xs:float" use="required" />
+        <xs:attribute name="leftLine" type="lineType" use="optional" default="solid" />
+        <xs:attribute name="middleLine" type="lineType" use="optional" default="dashed" />
+        <xs:attribute name="rightLine" type="lineType" use="optional" default="solid" />
+        <xs:attribute name="isStart" type="xs:boolean" use="optional" default="false" />
+    </xs:complexType>
+
+    <xs:complexType name="leftArc">
+        <xs:sequence />
+        <xs:attribute name="radius" type="xs:float" use="required" />
+        <xs:attribute name="angle" type="xs:float" use="required" />
+        <xs:attribute name="leftLine" type="lineType" use="optional" default="solid" />
+        <xs:attribute name="middleLine" type="lineType" use="optional" default="dashed" />
+        <xs:attribute name="rightLine" type="lineType" use="optional" default="solid" />
+    </xs:complexType>
+
+    <xs:complexType name="rightArc">
+        <xs:sequence />
+        <xs:attribute name="radius" type="xs:float" use="required" />
+        <xs:attribute name="angle" type="xs:float" use="required" />
+        <xs:attribute name="leftLine" type="lineType" use="optional" default="solid" />
+        <xs:attribute name="middleLine" type="lineType" use="optional" default="dashed" />
+        <xs:attribute name="rightLine" type="lineType" use="optional" default="solid" />
+    </xs:complexType>
+
+    <xs:complexType name="quadBezier">
+        <xs:sequence />
+        <xs:attribute name="p1x" type="xs:float" use="required" />
+        <xs:attribute name="p1y" type="xs:float" use="required" />
+        <xs:attribute name="p2x" type="xs:float" use="required" />
+        <xs:attribute name="p2y" type="xs:float" use="required" />
+        <xs:attribute name="leftLine" type="lineType" use="optional" default="solid" />
+        <xs:attribute name="middleLine" type="lineType" use="optional" default="dashed" />
+        <xs:attribute name="rightLine" type="lineType" use="optional" default="solid" />
+    </xs:complexType>
+
+    <xs:complexType name="cubicBezier">
+        <xs:complexContent>
+            <xs:extension base="quadBezier">
+                <xs:attribute name="p3x" type="xs:float" use="required" />
+                <xs:attribute name="p3y" type="xs:float" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="staticObstacle">
+        <xs:attribute name="width" type="xs:float" use="required" />
+        <xs:attribute name="length" type="xs:float" use="required" />
+        <xs:attribute name="position" type="xs:float" use="required" />
+        <xs:attribute name="anchor" type="anchorPosition" use="optional" default="center" />
+    </xs:complexType>
+
+    <xs:complexType name="zebraCrossing">
+        <xs:attribute name="length" type="xs:float" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="blockedArea">
+        <xs:attribute name="length" type="xs:float" use="required" />
+        <xs:attribute name="width" type="xs:float" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="trafficSign">
+        <xs:attribute name="type" type="trafficSignType" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="intersection">
+        <xs:attribute name="rule" use="required">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="priority-yield" />
+                    <xs:enumeration value="priority-stop" />
+                    <xs:enumeration value="yield" />
+                    <xs:enumeration value="stop" />
+                    <xs:enumeration value="equal" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="turn">
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="straight" />
+                    <xs:enumeration value="left" />
+                    <xs:enumeration value="right" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="parkingLot">
+        <xs:attribute name="length" type="xs:float" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="parkingObstacle">
+        <xs:attribute name="length" type="xs:float" use="required" />
+        <xs:attribute name="width" type="xs:float" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="sequence">
+        <xs:complexContent>
+            <xs:extension base="anyUnbounded">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="optional">
+        <xs:complexContent>
+            <xs:extension base="anyUnbounded">
+                <xs:attribute name="p" type="xs:float" use="required" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="select">
+        <xs:sequence>
+            <xs:element name="case" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:complexContent>
+                        <xs:extension base="anyUnbounded">
+                            <xs:attribute name="w" type="xs:float" use="required" />
+                        </xs:extension>
+                    </xs:complexContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="repeat">
+        <xs:complexContent>
+            <xs:extension base="anyUnbounded">
+                <xs:attribute name="n" type="xs:integer" use="optional" />
+                <xs:attribute name="min" type="xs:integer" use="optional" />
+                <xs:attribute name="max" type="xs:integer" use="optional" />
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="shuffle">
+        <xs:complexContent>
+            <xs:extension base="anyUnbounded">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="anyUnbounded">
+        <xs:choice maxOccurs="unbounded">
+            <xs:element name="line" type="line" maxOccurs="unbounded"/>
+            <xs:element name="leftArc" type="leftArc" maxOccurs="unbounded"/>
+            <xs:element name="rightArc" type="rightArc" maxOccurs="unbounded"/>
+            <xs:element name="quadBezier" type="quadBezier" maxOccurs="unbounded"/>
+            <xs:element name="cubicBezier" type="cubicBezier" maxOccurs="unbounded"/>
+            <xs:element name="zebraCrossing" type="zebraCrossing" maxOccurs="unbounded"/>
+            <xs:element name="blockedArea" type="blockedArea" maxOccurs="unbounded"/>
+            <xs:element name="trafficSign" type="trafficSign" maxOccurs="unbounded"/>
+            <xs:element name="intersection" type="intersection" maxOccurs="unbounded"/>
+            <xs:element name="staticObstacle" type="staticObstacle" maxOccurs="unbounded"/>
+            <xs:element name="parkingLot" type="parkingLot" maxOccurs="unbounded"/>
+            <xs:element name="parkingObstacle" type="parkingObstacle" maxOccurs="unbounded"/>
+            <xs:element name="sequence" type="sequence" maxOccurs="unbounded"/>
+            <xs:element name="optional" type="optional" maxOccurs="unbounded"/>
+            <xs:element name="select" type="select" maxOccurs="unbounded"/>
+            <xs:element name="repeat" type="repeat" maxOccurs="unbounded"/>
+            <xs:element name="shuffle" type="shuffle" maxOccurs="unbounded"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:element name="template">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="sequence" type="sequence" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
