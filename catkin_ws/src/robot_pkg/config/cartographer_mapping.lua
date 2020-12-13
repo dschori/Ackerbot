@@ -60,6 +60,11 @@ POSE_GRAPH.optimization_problem.huber_scale = 1e2
 
 POSE_GRAPH.optimize_every_n_nodes = 90
 
+POSE_GRAPH.optimization_problem.local_slam_pose_translation_weight = 100
+POSE_GRAPH.optimization_problem.local_slam_pose_rotation_weight = 100
+POSE_GRAPH.optimization_problem.odometry_translation_weight = 1
+POSE_GRAPH.optimization_problem.odometry_rotation_weight = 1
+
 return options
 
 --TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 1

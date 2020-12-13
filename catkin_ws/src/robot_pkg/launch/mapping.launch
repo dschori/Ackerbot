@@ -2,6 +2,11 @@
 
 <!--node pkg="tf" type="static_transform_publisher" name="base_to_tracking_frame" args="0 0 0 0 0 1.57 velodyne camera_t265_imu_optical_frame 100"></node-->
 
+<rosparam>
+/camera_t265/tracking_module/enable_relocalization: false
+</rosparam>
+
+
 <node name='cartographer_node' pkg='cartographer_ros' type='cartographer_node' args='
     -configuration_directory
       $(find robot_pkg)/config

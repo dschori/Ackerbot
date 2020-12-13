@@ -4,9 +4,7 @@ sudo docker build -t ros-noetic-realsense -f Dockerfile.ros.noetic .
 
 # start sensors (realsense + velodyne)
 sudo docker run -it --privileged --net=host --name weed_bot \
--v /home/dschori/MasterThesis/catkin_ws/src/mapping_pkg:/workspace/catkin_ws/src/mapping_pkg \
 -v /home/dschori/MasterThesis/catkin_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
--v /home/dschori/MasterThesis/catkin_ws/src/sensors_pkg:/workspace/catkin_ws/src/sensors_pkg \
 -v /home/dschori/MasterThesis/catkin_ws/build:/workspace/catkin_ws/build \
 -v /home/dschori/MasterThesis/catkin_ws/devel:/workspace/catkin_ws/devel \
 -v /home/dschori/MasterThesis/catkin_ws/logs:/workspace/catkin_ws/logs \

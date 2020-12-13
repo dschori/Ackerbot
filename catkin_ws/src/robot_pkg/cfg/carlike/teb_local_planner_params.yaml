@@ -45,15 +45,15 @@ TebLocalPlannerROS:
 
  # GoalTolerance
     
- xy_goal_tolerance: 0.2
- yaw_goal_tolerance: 0.1
+ xy_goal_tolerance: 0.3
+ yaw_goal_tolerance: 0.3
  free_goal_vel: False
  complete_global_plan: True
     
  # Obstacles
     
- min_obstacle_dist: 0.1 # This value must also include our robot's expansion, since footprint_model is set to "line".
- inflation_dist: 0.2
+ min_obstacle_dist: 0.2 # This value must also include our robot's expansion, since footprint_model is set to "line".
+ inflation_dist: 0.3
  include_costmap_obstacles: True
  costmap_obstacles_behind_robot_dist: 1.0
  obstacle_poses_affected: 15
