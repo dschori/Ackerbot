@@ -22,6 +22,6 @@
 
 	<node name="cmd_vel_to_ackermann_drive" pkg="robot_pkg" type="cmd_vel_to_ackermann_drive.py"/>
 
-  	<node name="drive_controller" pkg="robot_pkg" type="drive_controller.py"/>
+  	<node name="drive_controller" pkg="robot_pkg" type="drive_controller2.py"/>
 
 </launch>

@@ -161,6 +161,7 @@ include_directories(
 # )
 catkin_install_python(PROGRAMS scripts/cmd_vel_to_ackermann_drive.py
 scripts/drive_controller.py
+scripts/drive_controller2.py
 scripts/fixed_frame.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
