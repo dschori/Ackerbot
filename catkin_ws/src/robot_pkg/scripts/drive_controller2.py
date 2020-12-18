@@ -30,8 +30,8 @@ class Controller:
         rospy.loginfo('Drive Controller Started')
 
     def cmd_callback(self, msg):
-        self.steering_cmd = msg.drive.steering_angle
-        self.speed_cmd = msg.drive.speed
+        self.steering_cmd = msg.drive.steering_angle * 1.8
+        self.speed_cmd = msg.drive.speed * 1
 
         self.pid_speed.setpoint = self.speed_cmd
         self.pid_steering.setpoint = self.steering_cmd
@@ -67,8 +67,8 @@ class Controller:
 
             output_steering = self.pid_steering(self.steering_sensor)
             if self.speed_sensor < 0.0:
-                output_steering = output_steering * -1
-            angle = self.translate(output_steering, 1.0, -1.0, 75, 175)
+                output_steering = output_steering
+            angle = self.translate(self.steering_cmd, 1.0, -1.0, 75, 175)
             self.kit.servo[0].angle = angle
 
             if time.time() - current_time > 0.5:

@@ -47,7 +47,7 @@ MAP_BUILDER.use_trajectory_builder_2d = true
 MAP_BUILDER.num_background_threads = 4
 
 
-TRAJECTORY_BUILDER_2D.ceres_scan_matcher.occupied_space_weight = 20.
+TRAJECTORY_BUILDER_2D.ceres_scan_matcher.occupied_space_weight = 40.
 TRAJECTORY_BUILDER_2D.ceres_scan_matcher.translation_weight = 50.
 TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight = 100.
 TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true

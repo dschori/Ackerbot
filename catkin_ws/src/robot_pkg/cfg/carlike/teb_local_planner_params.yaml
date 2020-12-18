@@ -1,6 +1,6 @@
 TebLocalPlannerROS:
 
- odom_topic: odom
+ odom_topic: /camera_t265/odom/sample
     
  # Trajectory
   
@@ -19,16 +19,16 @@ TebLocalPlannerROS:
     
  # Robot
          
- max_vel_x: 1.0
- max_vel_x_backwards: 0.4
+ max_vel_x: 2.0
+ max_vel_x_backwards: 0.6
  max_vel_y: 0.0
  max_vel_theta: 1.0 # the angular velocity is also bounded by min_turning_radius in case of a carlike robot (r = v / omega)
  acc_lim_x: 0.5
  acc_lim_theta: 0.8
 
  # ********************** Carlike robot parameters ********************
- min_turning_radius: 0.5        # Min turning radius of the carlike robot (compute value using a model or adjust with rqt_reconfigure manually)
- wheelbase: 0.32                # Wheelbase of our robot
+ min_turning_radius: 0.9        # Min turning radius of the carlike robot (compute value using a model or adjust with rqt_reconfigure manually)
+ wheelbase: 0.35                # Wheelbase of our robot
  cmd_angle_instead_rotvel: True # stage simulator takes the angle instead of the rotvel as input (twist message)
  # ********************************************************************
 
@@ -46,13 +46,13 @@ TebLocalPlannerROS:
  # GoalTolerance
     
  xy_goal_tolerance: 0.3
- yaw_goal_tolerance: 0.3
+ yaw_goal_tolerance: 0.4
  free_goal_vel: False
  complete_global_plan: True
     
  # Obstacles
     
- min_obstacle_dist: 0.2 # This value must also include our robot's expansion, since footprint_model is set to "line".
+ min_obstacle_dist: 0.3 # This value must also include our robot's expansion, since footprint_model is set to "line".
  inflation_dist: 0.3
  include_costmap_obstacles: True
  costmap_obstacles_behind_robot_dist: 1.0
@@ -78,7 +78,7 @@ TebLocalPlannerROS:
  weight_acc_lim_x: 1
  weight_acc_lim_theta: 1
  weight_kinematics_nh: 1000
- weight_kinematics_forward_drive: 1
+ weight_kinematics_forward_drive: 2
  weight_kinematics_turning_radius: 1
  weight_optimaltime: 1 # must be > 0
  weight_shortest_path: 0
