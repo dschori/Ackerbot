@@ -76,7 +76,7 @@ WORKDIR /home/catkin_ws/src
 RUN git clone https://github.com/mit-racecar/racecar.git
 RUN git clone https://github.com/mit-racecar/racecar-simulator.git
 RUN git clone https://bitbucket.org/theconstructcore/openai_ros.git
-RUN git clone https://github.com/karray/neuroracer.git
+#RUN git clone https://github.com/karray/neuroracer.git
 WORKDIR /home/catkin_ws
 RUN rosdep install --from-paths src --ignore-src -r -y
 RUN /bin/bash -c '. /opt/ros/noetic/setup.bash; cd /home/catkin_ws; catkin build'

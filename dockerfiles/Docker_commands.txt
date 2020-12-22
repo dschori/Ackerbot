@@ -2,6 +2,7 @@
 sudo docker build -t ros-noetic-realsense -f Dockerfile.ros.noetic .
 
 
+
 # start sensors (realsense + velodyne)
 sudo docker run -it --privileged --net=host --name weed_bot \
 -v /home/dschori/MasterThesis/catkin_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
@@ -13,3 +14,7 @@ ros-noetic-realsense bash
 rosbag record -a -O data.bag -x "/camera_t265/fisheye1/(.*)|/camera_t265/fisheye2/(.*)" --split --size 1024
 
 rosrun map_server map_saver -f /home/dschori/MasterThesis/catkin_ws/src/robot_pkg/maps/indoor
+
+
+sudo docker run -it -p 8888:8888 -p 8080:8080 \
+ -v /home/dschori/PycharmProjects/MasterThesis/rl_ws:/home/catkin_ws/src/rl_ws dschori/weed-bot bash
