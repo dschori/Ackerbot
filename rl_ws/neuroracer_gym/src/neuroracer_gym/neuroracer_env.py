@@ -1,4 +1,5 @@
 import time
+import math
 
 import numpy as np
 
@@ -240,13 +241,70 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
         
     # def get_imu(self):
     #     return self.imu
+    
+    def laserscan_to_image(self, scan):
+        # Discretization Size
+        disc_size = .08
+        # Discretization Factor
+        disc_factor = 1/disc_size
+        # Max Lidar Range
+        max_lidar_range = 10
+        # Create Image Size Using Range and Discretization Factor
+        image_size = int(max_lidar_range*2*disc_factor)
+        
+        # Store maxAngle of lidar
+        maxAngle = scan.angle_max
+        # Store minAngle of lidar
+        minAngle = scan.angle_min
+        # Store angleInc of lidar
+        angleInc = scan.angle_increment
+        # Store maxLength in lidar distances
+        maxLength = scan.range_max
+        # Store array of ranges
+        ranges = scan.ranges
+        # Calculate the number of points in array of ranges
+        num_pts = len(ranges)
+        # Create Array for extracting X,Y points of each data point
+        xy_scan = np.zeros((num_pts,2))
+        # Create 3 Channel Blank Image
+        blank_image = np.zeros((image_size,image_size,3),dtype=np.uint8)
+        # Loop through all points converting distance and angle to X,Y point
+        for i in range(num_pts):
+            # Check that distance is not longer than it should be
+            if (ranges[i] > 10) or (math.isnan(ranges[i])):
+                pass
+            else:
+                # Calculate angle of point and calculate X,Y position
+                angle = minAngle + float(i)*angleInc
+                xy_scan[i][0] = float(ranges[i]*math.cos(angle))
+                xy_scan[i][1] = float(ranges[i]*math.sin(angle))
+
+        # Loop through all points plot in blank_image
+        for i in range(num_pts):
+            pt_x = xy_scan[i,0]
+            pt_y = xy_scan[i,1]
+            if (pt_x < max_lidar_range) or (pt_x > -1 * (max_lidar_range-disc_size)) or (pt_y < max_lidar_range) or (pt_y > -1 * (max_lidar_range-disc_size)):
+                pix_x = int(math.floor((pt_x + max_lidar_range) * disc_factor))
+                pix_y = int(math.floor((max_lidar_range - pt_y) * disc_factor))
+                if (pix_x > image_size) or (pix_y > image_size):
+                    print("Error")
+                else:
+                    blank_image[pix_y,pix_x] = [0,0,255]
+
+        # Convert CV2 Image to ROS Message
+        img = self.bridge.cv2_to_imgmsg(blank_image, encoding="bgr8")
+        # Publish image
+        return blank_image
+    
         
     def get_laser_scan(self):
-        return np.array(self.laser_scan.ranges, dtype=np.float32)
+        laser_scan = np.array(self.laser_scan.ranges, dtype=np.float32)
+        return laser_scan
     
     def get_camera_image(self):
         try:
             cv_image = self.bridge.compressed_imgmsg_to_cv2(self.camera_msg).astype('float32')
+            cv_image = self.laserscan_to_image(self.laser_scan).astype('float32')
         except Exception as e:
             rospy.logerr("CvBridgeError: Error converting image")
             rospy.logerr(e)

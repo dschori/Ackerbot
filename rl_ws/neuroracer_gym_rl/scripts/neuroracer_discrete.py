@@ -9,6 +9,10 @@ import rospy
 from neuroracer_gym.tasks import neuroracer_discrete_task
 from utils import preprocess, Memory
 
+
+
+
+
 class NeuroRacer:
     def __init__(self, agent_class, sample_batch_size, n_frames, buffer_max_size, chunk_size, add_flipped, always_explore=False):
         self.sample_batch_size = sample_batch_size
@@ -18,7 +22,8 @@ class NeuroRacer:
         
         self.n_frames = n_frames
 
-        self.img_y_offset = 200
+        #self.img_y_offset = 200
+        self.img_y_offset = 0
         self.img_y_scale = 0.2
         self.img_x_scale = 0.2
 

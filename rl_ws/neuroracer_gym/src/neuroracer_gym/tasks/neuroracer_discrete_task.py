@@ -18,7 +18,7 @@ default_sleep = 2
 
 print(register(
         id='NeuroRacer-v0',
-        entry_point='neuroracer_gym:tasks.neuroracer_discrete_task.NeuroRacerDiscreteTask',
+        entry_point='neuroracer_gym.tasks.neuroracer_discrete_task:NeuroRacerDiscreteTask',
         # timestep_limit=timestep_limit_per_episode,
     ))
 
