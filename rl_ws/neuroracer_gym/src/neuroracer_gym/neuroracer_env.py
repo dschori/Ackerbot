@@ -19,7 +19,7 @@ from ackermann_msgs.msg import AckermannDriveStamped
 from gym import spaces
 from gym.envs.registration import register
 
-# import cv2
+import cv2
 
 default_sleep = 1
 
@@ -244,7 +244,7 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
     
     def laserscan_to_image(self, scan):
         # Discretization Size
-        disc_size = .08
+        disc_size = .16
         # Discretization Factor
         disc_factor = 1/disc_size
         # Max Lidar Range
@@ -303,7 +303,7 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
     
     def get_camera_image(self):
         try:
-            cv_image = self.bridge.compressed_imgmsg_to_cv2(self.camera_msg).astype('float32')
+            #cv_image = self.bridge.compressed_imgmsg_to_cv2(self.camera_msg).astype('float32')
             cv_image = self.laserscan_to_image(self.laser_scan).astype('float32')
         except Exception as e:
             rospy.logerr("CvBridgeError: Error converting image")

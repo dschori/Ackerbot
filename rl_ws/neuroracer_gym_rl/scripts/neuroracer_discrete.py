@@ -9,7 +9,7 @@ import rospy
 from neuroracer_gym.tasks import neuroracer_discrete_task
 from utils import preprocess, Memory
 
-
+import cv2
 
 
 
@@ -80,6 +80,8 @@ class NeuroRacer:
 
                     next_state, reward, done, _ = self.env.step(action)
                     next_state = preprocess(next_state, self.img_y_offset, self.img_x_scale, self.img_y_scale)
+                    cv2.imwrite('./tmp.jpg', next_state*255.)
+                    print(np.min(next_state), np.max(next_state), np.mean(next_state), np.std(next_state))
                     stacked_next_states.append(next_state)
 
                     memory.append(action,np.stack(stacked_states, axis=2), np.stack(stacked_next_states, axis=2), reward, done)        
