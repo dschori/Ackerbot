@@ -24,8 +24,8 @@ class NeuroRacer:
 
         #self.img_y_offset = 200
         self.img_y_offset = 0
-        self.img_y_scale = 0.2
-        self.img_x_scale = 0.2
+        self.img_y_scale = 0.5
+        self.img_x_scale = 0.5
 
         state_size = self.env.observation_space.shape
         self.state_size        = (int((state_size[0]-self.img_y_offset)*self.img_y_scale), int(state_size[1]*self.img_x_scale), n_frames)
