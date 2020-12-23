@@ -22,4 +22,4 @@ sudo docker run -it -p 8888:8888 -p 8080:8080 \
  sudo docker run -it -p 8888:8888 -p 8080:8080 \
  -v /home/dschori/MasterThesis/rl_ws:/home/catkin_ws/src/rl_ws dschori/weed-bot bash
 
-docker run --rm -ti -e NVIDIA_VISIBLE_DEVICES=15 -p 8881:8888 -p 8882:8080 dschori/weed-bot bash
+docker run --rm -ti -e NVIDIA_VISIBLE_DEVICES=15 -p 8882:8888 -p 8884:8080 dschori/weed-bot bash
