@@ -1,3 +1,18 @@
+Mapping:
+Tab1, Start the Gazebo and Rviz Sim: roslaunch selfie_race easy_track1.launch
+Tab2, Start the Car Controll: rosrun selfie_sim_control sim_manager.py
+Tab3, Start the Hector Mapping: roslaunch hector_mapping mapping_default.launch
+Move Around
+Tab4, Save the Map: rosrun map_server map_saver -f map_name
+
+
+Navigation:
+Tab1, Start the Gazebo and Rviz Sim: roslaunch selfie_race easy_track1.launch
+Tab2, Start the Car Controll: rosrun selfie_sim_control sim_manager.py
+Tab3, Start Navigation: roslaunch steer_bot_navigation teb_navigation.launch
+Set Navigation Goal in RVIZ
+
+
 
 sudo docker build -t ros-noetic-realsense -f Dockerfile.ros.noetic .
 
