@@ -133,6 +133,8 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
         obs_low = 0
         obs_high = 1
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, shape=self.input_shape)
+        #self.observation_space = spaces.Box(low=obs_low, high=obs_high, shape=(24, 40, 1))
+        #self.observation_space = spaces.Discrete(1081)
 
         img_dims = img.shape[0]*img.shape[1]*img.shape[2]
         byte_size = 4
@@ -215,6 +217,9 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _get_obs(self):
         return self.get_camera_image()
+        #laser_scan = self.get_laser_scan()[:1000].reshape((25, 40, 1))
+        #print(laser_scan.shape)
+        #return laser_scan.reshape((25, 40))
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()
@@ -304,7 +309,15 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
     def get_camera_image(self):
         try:
             #cv_image = self.bridge.compressed_imgmsg_to_cv2(self.camera_msg).astype('float32')
-            cv_image = self.laserscan_to_image(self.laser_scan).astype('float32')
+            #cv_image = self.laserscan_to_image(self.laser_scan).astype('float32')
+            cv_image  = self.get_laser_scan()[:1080].reshape((12, 90)).astype('float32')
+            tmp = np.zeros((12, 90, 3))
+            tmp[:, :, 0] = cv_image
+            cv_image = tmp.copy()
+            #print("shape: " + str(cv_image.shape))
+            cv_image = np.clip(cv_image, None, self.laser_scan.range_max)
+            cv_image /= self.laser_scan.range_max
+            #print("max: " + str(np.max(cv_image)))
         except Exception as e:
             rospy.logerr("CvBridgeError: Error converting image")
             rospy.logerr(e)

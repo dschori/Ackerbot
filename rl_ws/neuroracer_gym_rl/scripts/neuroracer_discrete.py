@@ -24,11 +24,12 @@ class NeuroRacer:
 
         #self.img_y_offset = 200
         self.img_y_offset = 0
-        self.img_y_scale = 0.5
-        self.img_x_scale = 0.5
+        self.img_y_scale = 1.0
+        self.img_x_scale = 1.0
 
         state_size = self.env.observation_space.shape
         self.state_size        = (int((state_size[0]-self.img_y_offset)*self.img_y_scale), int(state_size[1]*self.img_x_scale), n_frames)
+        #self.state_size = self.env.observation_space.n
         rospy.loginfo("State size")
         rospy.loginfo(self.state_size)
 
@@ -79,9 +80,11 @@ class NeuroRacer:
                     action = self.agent.act(np.expand_dims(np.stack(stacked_states, axis=2), axis=0))
 
                     next_state, reward, done, _ = self.env.step(action)
+                    #print(next_state.shape)
                     next_state = preprocess(next_state, self.img_y_offset, self.img_x_scale, self.img_y_scale)
+                    #print(next_state.shape)
                     cv2.imwrite('./tmp.jpg', next_state*255.)
-                    print(np.min(next_state), np.max(next_state), np.mean(next_state), np.std(next_state))
+                    #print(np.min(next_state), np.max(next_state), np.mean(next_state), np.std(next_state))
                     stacked_next_states.append(next_state)
 
                     memory.append(action,np.stack(stacked_states, axis=2), np.stack(stacked_next_states, axis=2), reward, done)        

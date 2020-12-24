@@ -7,10 +7,13 @@ from sklearn.utils import shuffle
 from collections import deque
 import os
 
-def preprocess_old(img, y_offset, x_scale, y_scale, interpolation=cv2.INTER_LINEAR):
+def preprocess_ori(img, y_offset, x_scale, y_scale, interpolation=cv2.INTER_LINEAR):
     return cv2.resize(cv2.cvtColor(img[y_offset:,:], cv2.COLOR_RGB2GRAY), None, fx=x_scale, fy=y_scale, interpolation=interpolation)/255.0
 
 def preprocess(img, y_offset, x_scale, y_scale, interpolation=cv2.INTER_LINEAR):
+    return img[:, :, 0]
+
+def preprocess_new(img, y_offset, x_scale, y_scale, interpolation=cv2.INTER_LINEAR):
     output = cv2.resize(cv2.cvtColor(img[y_offset:,:], cv2.COLOR_RGB2GRAY), None, fx=x_scale, fy=y_scale, interpolation=interpolation)
     output = output * (255. / np.max(output))
     return output / 255.
