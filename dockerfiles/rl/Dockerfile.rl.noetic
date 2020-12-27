@@ -115,6 +115,18 @@ RUN cp -rf -p /home/catkin_ws/src/racecar-simulator/racecar_description /root/gz
 RUN git checkout gzweb_1.4.1 \
     && xvfb-run -s "-screen 0 1280x1024x24" ./deploy.sh -m local
 
+# Install OpenJDK-8
+RUN apt-get update && \
+    apt-get install -y openjdk-8-jdk && \
+    apt-get install -y ant && \
+    apt-get install -y xauth && \
+    apt-get clean;
+
+# Install Pycharm
+WORKDIR /tmp
+RUN wget https://download-cf.jetbrains.com/python/pycharm-community-2020.3.1.tar.gz && \
+    tar xzf pycharm-*.tar.gz -C /opt/
+
 WORKDIR /home
 COPY start.sh ./
 RUN ["chmod", "+x", "start.sh"]
