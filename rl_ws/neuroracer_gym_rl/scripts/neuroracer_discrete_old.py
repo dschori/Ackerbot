@@ -11,6 +11,8 @@ from utils import preprocess, Memory
 
 import cv2
 
+
+
 class NeuroRacer:
     def __init__(self, agent_class, sample_batch_size, n_frames, buffer_max_size, chunk_size, add_flipped, always_explore=False):
         self.sample_batch_size = sample_batch_size
@@ -33,7 +35,6 @@ class NeuroRacer:
 
         self.action_size       = self.env.action_space.n
         self.agent             = agent_class(self.state_size, self.action_size, buffer_max_size, chunk_size, add_flipped, always_explore=always_explore)
-        
 
         
     def format_time(self, t):

@@ -38,3 +38,14 @@ sudo docker run -it -p 8888:8888 -p 8080:8080 \
  -v /home/dschori/MasterThesis/rl_ws:/home/catkin_ws/src/rl_ws dschori/weed-bot bash
 
 docker run --rm -ti -e NVIDIA_VISIBLE_DEVICES=15 -p 8882:8888 -p 8884:8080 dschori/weed-bot bash
+
+
+docker run
+-it #Make docker session interactive
+--rm #Automatically remove the container when it exits
+--gpus all #Enable GPU support in the container
+-e DISPLAY=${DISPLAY} #Pass environment variable display
+--net=host #Share network configu of the host with this container
+--user "$(id -u):$(id -g)" #Pass user id and group id
+-v /home/dschori/PycharmProjects:/PycharmProjects #Volume mounting to access pycharm from the container
+test-image

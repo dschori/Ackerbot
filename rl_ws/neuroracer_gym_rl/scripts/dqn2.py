@@ -102,7 +102,7 @@ class Agent():
         self.buffer.extend(new_data)
         buffer_length = self.buffer.length()
         
-        chunks = buffer_length / self.chunk_size
+        chunks = int(buffer_length / self.chunk_size)
         
         chunk_n = 2
         if chunks < 2:
@@ -135,7 +135,7 @@ class Agent():
                 states = np.concatenate((states,states_flipped))
                 targets = np.concatenate((targets,targets_flipped))
             fit_time = time.time()
-            self.model.fit(states, targets, shuffle=True, batch_size=1000, epochs=1, verbose=0)
+            self.model.fit(states, targets, shuffle=True, batch_size=1000, epochs=1, verbose=1)
             print('fit time:', time.time()-fit_time)
         
         if self.exploration_rate > self.exploration_min:
