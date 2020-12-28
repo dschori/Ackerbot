@@ -24,14 +24,6 @@ RUN apt-get update && \
       python3-setuptools \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install tensorflow-gpu && \
-    pip3 install gym && \
-    pip3 install scikit-learn && \
-    pip3 install matplotlib && \
-    pip3 install scipy && \
-    pip3 install jupyterlab && \
-    pip3 install scikit-image
-
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
     apt-key adv --keyserver keys.gnupg.net --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE && \
@@ -126,6 +118,16 @@ RUN apt-get update && \
 WORKDIR /tmp
 RUN wget https://download-cf.jetbrains.com/python/pycharm-community-2020.3.1.tar.gz && \
     tar xzf pycharm-*.tar.gz -C /opt/
+
+# Install Python Packages
+RUN pip3 install tensorflow-gpu && \
+    pip3 install gym && \
+    pip3 install scikit-learn && \
+    pip3 install matplotlib && \
+    pip3 install scipy && \
+    pip3 install jupyterlab && \
+    pip3 install scikit-image && \
+    pip3 install tf-agents
 
 WORKDIR /home
 COPY start.sh ./

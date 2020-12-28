@@ -39,13 +39,17 @@ sudo docker run -it -p 8888:8888 -p 8080:8080 \
 
 docker run --rm -ti -e NVIDIA_VISIBLE_DEVICES=15 -p 8882:8888 -p 8884:8080 dschori/weed-bot bash
 
+sudo sudo docker run -it --net=host --env="DISPLAY" --volume="$HOME/.Xauthority:/root/.Xauthority:rw" \
+-v /home/dschori/PycharmProjects/MasterThesis/rl_ws:/home/catkin_ws/src/rl_ws dschori/weed-bot bash
+
+xhost +local:docker
 
 sudo docker run \
--it \
---rm  \
---gpus all \
--e DISPLAY=${DISPLAY} \
---net=host \
---user "$(id -u):$(id -g)" \
--v snap/pycharm-professional/current:/charm \
-test-image
+--rm \
+-it -p 8888:8888 -p 8080:8080 \
+--privileged \
+--env DISPLAY=unix$DISPLAY \
+-v $XAUTH:/root/.Xauthority \
+-v /tmp/.X11-unix:/tmp/.X11-unix \
+-v /home/dschori/PycharmProjects/MasterThesis/rl_ws:/home/catkin_ws/src/rl_ws \
+dschori/weed-bot bash

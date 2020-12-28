@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     always_explore = rospy.get_param('/neuroracer_gym/always_explore')
     agent_name = rospy.get_param('/neuroracer_gym/agent_name')
-    
+
     module = __import__(agent_name)
     agent_class = getattr(module, 'Agent')
 
