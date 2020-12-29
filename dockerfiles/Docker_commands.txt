@@ -53,3 +53,7 @@ sudo docker run \
 -v /tmp/.X11-unix:/tmp/.X11-unix \
 -v /home/dschori/PycharmProjects/MasterThesis/rl_ws:/home/catkin_ws/src/rl_ws \
 dschori/weed-bot bash
+
+tf==2.2
+tensorflow-probability==0.10.1
+tf-agents==0.5.0

@@ -35,6 +35,7 @@ from tf_agents.specs import array_spec
 from tf_agents.environments import wrappers
 from tf_agents.environments import suite_gym
 from tf_agents.trajectories import time_step as ts
+from tf_agents.specs import tensor_spec
 
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -78,7 +79,7 @@ class NeuroRacerEnvNew():
         # self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
-        self._init_camera()
+        #self._init_camera()
 
         self.laser_subscription = rospy.Subscriber("/scan", LaserScan, self._laser_scan_callback)
 
@@ -226,8 +227,12 @@ class NeuroRacerEnvNew():
         raise NotImplementedError()
 
     def _get_obs(self):
-        return self.get_camera_image()
-        # laser_scan = self.get_laser_scan()[:1000].reshape((25, 40, 1))
+        # return self.get_camera_image()
+        laser_scan = self.get_laser_scan()[:1080].astype('float32')
+
+        laser_scan = np.clip(laser_scan, None, self.laser_scan.range_max)
+        laser_scan /= self.laser_scan.range_max
+        return laser_scan
         # print(laser_scan.shape)
         # return laser_scan.reshape((25, 40))
 
@@ -317,6 +322,7 @@ class NeuroRacerEnvNew():
         return laser_scan
 
     def get_camera_image(self):
+
         try:
             # cv_image = self.bridge.compressed_imgmsg_to_cv2(self.camera_msg).astype('float32')
             # cv_image = self.laserscan_to_image(self.laser_scan).astype('float32')
@@ -327,6 +333,7 @@ class NeuroRacerEnvNew():
             # print("shape: " + str(cv_image.shape))
             cv_image = np.clip(cv_image, None, self.laser_scan.range_max)
             cv_image /= self.laser_scan.range_max
+            cv_image = cv_image[:, :, 0].reshape((1080, ))
             # print("max: " + str(np.max(cv_image)))
         except Exception as e:
             rospy.logerr("CvBridgeError: Error converting image")
@@ -360,9 +367,9 @@ class NeuroRacerEnvNew():
 class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
     def __init__(self):
         self._action_spec = array_spec.BoundedArraySpec(
-            shape=(), dtype=np.int32, minimum=0, maximum=1, name='action')
+            shape=(), dtype=np.int32, minimum=0, maximum=2, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(1,), dtype=np.int32, minimum=0, name='observation')
+            shape=(1080,), dtype=np.float32, name='observation')
         self._state = 0
         self._episode_ended = False
         self._seed = 1
@@ -372,6 +379,9 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         self.number_of_sleeps = 10
         self.cumulated_steps = 0.0
         super(NeuroRacerTfAgents, self).__init__()
+
+    #def reward_spec(self):
+    #    return tensor_spec.TensorSpec((1,), np.dtype('float32'), 'reward')
 
     def action_spec(self):
         return self._action_spec
@@ -388,7 +398,7 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
 
         self._state = self._get_obs()
         self._episode_ended = False
-        return ts.restart(np.array([self._state], dtype=np.float32))
+        return ts.restart(np.array(self._state, dtype=np.float32))
 
     def _set_action(self, action):
         self.gazebo.unpauseSim()
@@ -401,14 +411,17 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         elif action == 2:  # left
             steering_angle = -1
         elif action == 3:
+            pass
+
+        if self._is_collided():
             self._episode_ended = True
 
         if not self._episode_ended:
             self.steering(steering_angle, self.speed)
             if self.rate:
                 for i in range(int(self.number_of_sleeps)):
-                    #self.rate.sleep()
-                    time.sleep(0.05)
+                    self.rate.sleep()
+                    #time.sleep(0.05)
                     self.steering(steering_angle, self.speed)
         self.gazebo.pauseSim()
 
@@ -421,11 +434,12 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
 
         self._set_action(action)
 
+        reward = self._compute_reward(observations=None, done=False)
+
         if self._episode_ended:
-            reward = 0
-            return ts.termination(np.array([self._state], dtype=np.float32), reward)
+            return ts.termination(np.array(self._state, dtype=np.float32), reward)
         else:
-            return ts.transition(np.array([self._state], dtype=np.float32), reward=0.0, discount=1.0)
+            return ts.transition(np.array(self._state, dtype=np.float32), reward=0.0, discount=1.0)
 
     def set_sleep_rate(self, hz):
         self.rate = None
@@ -459,8 +473,8 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         else:
             reward = -100
 
-        self.cumulated_reward += reward
-        self.cumulated_steps += 1
+        #self.cumulated_reward += reward
+        #self.cumulated_steps += 1
 
         return reward
 
