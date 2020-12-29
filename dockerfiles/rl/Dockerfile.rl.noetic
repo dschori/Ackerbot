@@ -120,14 +120,15 @@ RUN wget https://download-cf.jetbrains.com/python/pycharm-community-2020.3.1.tar
     tar xzf pycharm-*.tar.gz -C /opt/
 
 # Install Python Packages
-RUN pip3 install tensorflow-gpu && \
+RUN pip3 install tensorflow==2.2 && \
     pip3 install gym && \
     pip3 install scikit-learn && \
     pip3 install matplotlib && \
     pip3 install scipy && \
     pip3 install jupyterlab && \
     pip3 install scikit-image && \
-    pip3 install tf-agents
+    pip3 install tensorflow-probability==0.10.1 && \
+    pip3 install tf-agents==0.5.0
 
 WORKDIR /home
 COPY start.sh ./

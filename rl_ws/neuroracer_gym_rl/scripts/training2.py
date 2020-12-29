@@ -8,6 +8,7 @@ from neuroracer_gym import neuroracer_env
 from tf_agents.environments import tf_py_environment
 from tf_agents.networks import q_network
 from tf_agents.agents.dqn import dqn_agent
+from tf_agents.agents.ddpg import ddpg_agent
 from tf_agents.utils import common
 from tf_agents.policies import random_tf_policy
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
@@ -44,7 +45,7 @@ print(env.action_spec())
 
 env = tf_py_environment.TFPyEnvironment(env)
 
-fc_layer_params = (100,)
+fc_layer_params = (75, 40)
 
 q_net = q_network.QNetwork(
     env.observation_spec(),
@@ -117,12 +118,12 @@ replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
     batch_size=env.batch_size,
     max_length=1000)
 
-print(env.reset())
+#print(env.reset())
 print(random_policy.action(time_step=env.reset()))
 
 collect_data(env, random_policy, replay_buffer, 10)
 
-print(compute_avg_return(env, random_policy, 2))
+#print(compute_avg_return(env, random_policy, 2))
 
 dataset = replay_buffer.as_dataset(
     num_parallel_calls=1,
@@ -131,8 +132,6 @@ dataset = replay_buffer.as_dataset(
 
 print(dataset)
 
-agent.train = common.function(agent.train)
-
 # Reset the train step
 agent.train_step_counter.assign(0)
 
@@ -140,10 +139,10 @@ agent.train_step_counter.assign(0)
 avg_return = compute_avg_return(env, agent.policy, 2)
 returns = [avg_return]
 iterator = iter(dataset)
-for _ in range(2):
+for _ in range(10000):
 
     # Collect a few steps using collect_policy and save to the replay buffer.
-    collect_data(env, agent.collect_policy, replay_buffer, 2)
+    collect_data(env, agent.collect_policy, replay_buffer, 1)
 
     # Sample a batch of data from the buffer and update the agent's network.
     experience, unused_info = next(iterator)
@@ -151,10 +150,10 @@ for _ in range(2):
 
     step = agent.train_step_counter.numpy()
 
-    if step % 1 == 0:
+    if step % 5 == 0:
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
-    if step % 1 == 0:
+    if step % 200 == 0:
         avg_return = compute_avg_return(env, agent.policy, 2)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
         returns.append(avg_return)

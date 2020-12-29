@@ -20,6 +20,7 @@ from gazebo_msgs.srv import SetModelState
 
 from openai_ros import robot_gazebo_env
 from sensor_msgs.msg import LaserScan, CompressedImage
+from nav_msgs.msg import Odometry
 from cv_bridge import CvBridge, CvBridgeError
 # from std_msgs.msg import Float64
 # from sensor_msgs.msg import Image
@@ -79,9 +80,11 @@ class NeuroRacerEnvNew():
         # self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
-        #self._init_camera()
+        # self._init_camera()
 
         self.laser_subscription = rospy.Subscriber("/scan", LaserScan, self._laser_scan_callback)
+
+        self.odom_subscription = rospy.Subscriber("/vesc/odom", Odometry, self._odom_callback)
 
         self.drive_control_publisher = rospy.Publisher("/vesc/ackermann_cmd_mux/input/navigation",
                                                        AckermannDriveStamped,
@@ -123,7 +126,19 @@ class NeuroRacerEnvNew():
         rospy.logdebug("START ALL SENSORS READY")
         self._check_laser_scan_ready()
         self._check_camera_ready()
+        self._check_odom_ready()
         rospy.logdebug("ALL SENSORS READY")
+
+    def _check_odom_ready(self):
+        self.odom = None
+        rospy.logdebug("Waiting for /vesc/odom to be READY...")
+        while self.odom is None and not rospy.is_shutdown():
+            try:
+                self.odom = rospy.wait_for_message('/vesc/odom',
+                                                         Odometry,
+                                                         timeout=1.0)
+            except:
+                rospy.logerr("Odom not ready yet, retrying for getting odom_msg")
 
     def _check_camera_ready(self):
         self.camera_msg = None
@@ -187,6 +202,9 @@ class NeuroRacerEnvNew():
 
     def _camera_callback(self, msg):
         self.camera_msg = msg
+
+    def _odom_callback(self, msg):
+        self.odom = msg
 
     def _check_publishers_connection(self):
         """
@@ -256,8 +274,8 @@ class NeuroRacerEnvNew():
         command = self._create_steering_command(steering_angle, speed)
         self.drive_control_publisher.publish(command)
 
-    # def get_odom(self):
-    #     return self.odom
+    def get_odom(self):
+        return self.odom
 
     # def get_imu(self):
     #     return self.imu
@@ -374,10 +392,11 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         self._episode_ended = False
         self._seed = 1
         self.rate = None
-        self.speed = 1
+        self.speed = 1.5
         self.set_sleep_rate(100)
         self.number_of_sleeps = 10
         self.cumulated_steps = 0.0
+        self.time_now = time.time()
         super(NeuroRacerTfAgents, self).__init__()
 
     #def reward_spec(self):
@@ -410,11 +429,17 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
             steering_angle = 0
         elif action == 2:  # left
             steering_angle = -1
-        elif action == 3:
-            pass
+        elif action == 3: # backward
+            steering_angle = 0
+            self.speed = -1
 
         if self._is_collided():
+            self.time_now = time.time()
             self._episode_ended = True
+
+        if time.time() - self.time_now > 90.:
+            self.time_now = time.time()
+            # self._episode_ended = True
 
         if not self._episode_ended:
             self.steering(steering_angle, self.speed)
@@ -434,12 +459,16 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
 
         self._set_action(action)
 
-        reward = self._compute_reward(observations=None, done=False)
+        # reward = self._compute_reward(observations=None, done=False)
+
+        reward = self._compute_reward2()
 
         if self._episode_ended:
-            return ts.termination(np.array(self._state, dtype=np.float32), reward)
+            self.time_now = time.time()
+            print('Reward: {}'.format(reward))
+            return ts.termination(np.array(self._state, dtype=np.float32), reward=reward)
         else:
-            return ts.transition(np.array(self._state, dtype=np.float32), reward=0.0, discount=1.0)
+            return ts.transition(np.array(self._state, dtype=np.float32), reward=0.0, discount=1.1)
 
     def set_sleep_rate(self, hz):
         self.rate = None
@@ -462,6 +491,13 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         left_distance = np.clip(ranges[895:905], None, 10).mean()
         middle_distance = np.clip(ranges[525:555], None, 10).mean()
         return rigth_distance, left_distance, middle_distance
+
+    def _compute_reward2(self):
+        odom = self.get_odom()
+        px = odom.pose.pose.position.x
+        py = odom.pose.pose.position.y
+        dist = math.hypot(px - self.initial_position['p_x'], py - self.initial_position['p_y'])
+        return dist**2
 
     def _compute_reward(self, observations, done):
         if not done:
