@@ -46,13 +46,15 @@ print(env.action_spec())
 env = tf_py_environment.TFPyEnvironment(env)
 
 fc_layer_params = (75, 40)
+dropout_layer_params = (0.25, 0.25)
 
 q_net = q_network.QNetwork(
     env.observation_spec(),
     env.action_spec(),
-    fc_layer_params=fc_layer_params)
+    fc_layer_params=fc_layer_params,
+    dropout_layer_params=dropout_layer_params)
 
-optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-3)
+optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-4)
 
 train_step_counter = tf.Variable(0)
 
@@ -146,6 +148,16 @@ for _ in range(10000):
 
     # Sample a batch of data from the buffer and update the agent's network.
     experience, unused_info = next(iterator)
+    j = 0
+    while True:
+        break
+        train_loss = agent.train(experience).loss
+        if train_loss.numpy() < 5.0:
+            break
+        if j > 200:
+            print('break after 200 training it.')
+            break
+        j += 1
     train_loss = agent.train(experience).loss
 
     step = agent.train_step_counter.numpy()
@@ -153,7 +165,7 @@ for _ in range(10000):
     if step % 5 == 0:
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
-    if step % 200 == 0:
+    if step % 400 == 0:
         avg_return = compute_avg_return(env, agent.policy, 2)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
         returns.append(avg_return)
