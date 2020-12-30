@@ -5,7 +5,7 @@ import tensorflow as tf
 
 from gym.envs.registration import register
 from neuroracer_gym import neuroracer_env
-from tf_agents.environments import tf_py_environment
+from tf_agents.environments import tf_py_environment, utils
 from tf_agents.networks import q_network
 from tf_agents.agents.dqn import dqn_agent
 from tf_agents.agents.ddpg import ddpg_agent
@@ -25,7 +25,15 @@ rospy.init_node('neuroracer_qlearn', anonymous=True, log_level=rospy.INFO)
 env = NeuroRacerTfAgents()
 
 env.initial_position = {'p_x': np.random.uniform(1, 4), 'p_y': 3.7, 'p_z': 0.05, 'o_x': 0, 'o_y': 0.0,
-                        'o_z': np.random.uniform(0.4, 1), 'o_w': 0.855}
+                'o_z': np.random.uniform(0.4, 1), 'o_w': 0.855}
+
+print('action_spec:', env.action_spec())
+print('time_step_spec.observation:', env.time_step_spec().observation)
+print('time_step_spec.step_type:', env.time_step_spec().step_type)
+print('time_step_spec.discount:', env.time_step_spec().discount)
+print('time_step_spec.reward:', env.time_step_spec().reward)
+
+utils.validate_py_environment(env, episodes=5)
 
 time_step = env.reset()
 
@@ -72,9 +80,7 @@ print(env.batch_size)
 
 print(agent.collect_data_spec)
 
-
 # Working until here
-
 
 def collect_step(environment, policy, buffer):
     time_step = environment.current_time_step()
@@ -144,20 +150,13 @@ iterator = iter(dataset)
 for _ in range(10000):
 
     # Collect a few steps using collect_policy and save to the replay buffer.
-    collect_data(env, agent.collect_policy, replay_buffer, 1)
+    # collect_data(env, agent.collect_policy, replay_buffer, 1)
+    collect_data(env, random_policy, replay_buffer, 1)
 
     # Sample a batch of data from the buffer and update the agent's network.
     experience, unused_info = next(iterator)
+    # print(experience.observation.numpy())
     j = 0
-    while True:
-        break
-        train_loss = agent.train(experience).loss
-        if train_loss.numpy() < 5.0:
-            break
-        if j > 200:
-            print('break after 200 training it.')
-            break
-        j += 1
     train_loss = agent.train(experience).loss
 
     step = agent.train_step_counter.numpy()
