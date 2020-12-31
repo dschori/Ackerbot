@@ -14,6 +14,8 @@ from tf_agents.policies import random_tf_policy
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.trajectories import time_step as ts
+from tf_agents.policies.random_tf_policy import RandomTFPolicy
+from tf_agents.replay_buffers.tf_uniform_replay_buffer import TFUniformReplayBuffer
 
 # just to register env:
 from neuroracer_gym.tasks.neuroracer_discrete_task import NeuroRacerTfAgents
@@ -25,7 +27,7 @@ rospy.init_node('neuroracer_qlearn', anonymous=True, log_level=rospy.INFO)
 env = NeuroRacerTfAgents()
 
 env.initial_position = {'p_x': np.random.uniform(1, 4), 'p_y': 3.7, 'p_z': 0.05, 'o_x': 0, 'o_y': 0.0,
-                'o_z': np.random.uniform(0.4, 1), 'o_w': 0.855}
+                        'o_z': np.random.uniform(0.4, 1), 'o_w': 0.855}
 
 print('action_spec:', env.action_spec())
 print('time_step_spec.observation:', env.time_step_spec().observation)
@@ -54,7 +56,7 @@ print(env.action_spec())
 env = tf_py_environment.TFPyEnvironment(env)
 
 fc_layer_params = (75, 40)
-dropout_layer_params = (0.25, 0.25)
+dropout_layer_params = (0.15, 0.15)
 
 q_net = q_network.QNetwork(
     env.observation_spec(),
@@ -79,6 +81,7 @@ agent.initialize()
 print(env.batch_size)
 
 print(agent.collect_data_spec)
+
 
 # Working until here
 
@@ -126,35 +129,72 @@ replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
     batch_size=env.batch_size,
     max_length=1000)
 
-#print(env.reset())
-print(random_policy.action(time_step=env.reset()))
+# print(env.reset())
+# print(random_policy.action(time_step=env.reset()))
 
-collect_data(env, random_policy, replay_buffer, 10)
+# collect_data(env, random_policy, replay_buffer, 10)
 
-#print(compute_avg_return(env, random_policy, 2))
+# print(compute_avg_return(env, random_policy, 2))
 
-dataset = replay_buffer.as_dataset(
-    num_parallel_calls=1,
-    sample_batch_size=1,
-    num_steps=2).prefetch(3)
+# dataset = replay_buffer.as_dataset(
+#    num_parallel_calls=1,
+#    sample_batch_size=1,
+#    num_steps=2).prefetch(3)
 
-print(dataset)
+# print(dataset)
 
 # Reset the train step
 agent.train_step_counter.assign(0)
 
+
+class ExperienceReply(object):
+    def __init__(self, agent, environment):
+        self._replay_buffer = TFUniformReplayBuffer(
+            data_spec=agent.collect_data_spec,
+            batch_size=environment.batch_size,
+            max_length=50000)
+
+        self._random_policy = RandomTFPolicy(environment.time_step_spec(),
+                                             environment.action_spec())
+
+        self._fill_buffer(environment, self._random_policy, steps=100)
+
+        self.dataset = self._replay_buffer.as_dataset(
+            num_parallel_calls=3,
+            sample_batch_size=64,
+            num_steps=2).prefetch(3)
+
+        self.iterator = iter(self.dataset)
+
+    def _fill_buffer(self, environment, policy, steps):
+        for _ in range(steps):
+            self.timestamp_data(environment, policy)
+
+    def timestamp_data(self, environment, policy):
+        time_step = environment.current_time_step()
+        action_step = policy.action(time_step)
+        next_time_step = environment.step(action_step.action)
+        timestamp_trajectory = trajectory.from_transition(time_step, action_step, next_time_step)
+
+        self._replay_buffer.add_batch(timestamp_trajectory)
+
+
 # Evaluate the agent's policy once before training.
-avg_return = compute_avg_return(env, agent.policy, 2)
+avg_return = compute_avg_return(env, agent.policy, 1)
 returns = [avg_return]
-iterator = iter(dataset)
+# iterator = iter(dataset)
+experience_replay = ExperienceReply(agent, env)
 for _ in range(10000):
 
     # Collect a few steps using collect_policy and save to the replay buffer.
     # collect_data(env, agent.collect_policy, replay_buffer, 1)
-    collect_data(env, random_policy, replay_buffer, 1)
+    # collect_data(env, random_policy, replay_buffer, 1)
+    for _ in range(100):
+        experience_replay.timestamp_data(env, agent.collect_policy)
 
     # Sample a batch of data from the buffer and update the agent's network.
-    experience, unused_info = next(iterator)
+    # experience, unused_info = next(iterator)
+    experience, unused_info = next(experience_replay.iterator)
     # print(experience.observation.numpy())
     j = 0
     train_loss = agent.train(experience).loss
