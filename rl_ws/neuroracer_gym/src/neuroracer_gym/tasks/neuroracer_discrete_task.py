@@ -387,6 +387,7 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         self.set_sleep_rate(100)
         self.number_of_sleeps = 2
         self.cumulated_steps = 0.0
+        self.cumulated_reward = 0.0
         self.time_now = time.time()
         super(NeuroRacerTfAgents, self).__init__()
 
@@ -454,11 +455,14 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
 
         # reward = self._compute_reward(observations=None, done=False)
 
-        reward = self._compute_reward3()
+        reward = self._compute_reward2()
+        self.cumulated_reward += reward
 
         if self._episode_ended:
             self.time_now = time.time()
-            #print('Reward: {}'.format(reward))
+            reward = -self.cumulated_reward
+            print('Cumulated Reward: {}'.format(reward))
+            self.cumulated_reward = 0.0
             return ts.termination(np.array(self._state, dtype=np.float32), reward=reward)
         else:
             #print('Reward: {}'.format(reward))
@@ -491,13 +495,13 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         px = odom.pose.pose.position.x
         py = odom.pose.pose.position.y
         dist = math.hypot(px - self.initial_position['p_x'], py - self.initial_position['p_y'])
-        return dist ** 2
+        return dist ** 1.2
 
     def _compute_reward3(self):
         ranges = self.get_laser_scan()
         min_range = np.min(ranges)
         reward = min_range * 100.
-        reward = min(130., reward) - 30.
+        reward = min(100., reward) - 50.
         return reward
 
     def _compute_reward(self, observations, done):

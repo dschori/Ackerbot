@@ -55,8 +55,8 @@ print(env.action_spec())
 
 env = tf_py_environment.TFPyEnvironment(env)
 
-fc_layer_params = (75, 40)
-dropout_layer_params = (0.15, 0.15)
+fc_layer_params = (100, )
+dropout_layer_params = (0.05, )
 
 q_net = q_network.QNetwork(
     env.observation_spec(),
@@ -64,7 +64,7 @@ q_net = q_network.QNetwork(
     fc_layer_params=fc_layer_params,
     dropout_layer_params=dropout_layer_params)
 
-optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-4)
+optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-3)
 
 train_step_counter = tf.Variable(0)
 
@@ -72,8 +72,10 @@ agent = dqn_agent.DqnAgent(
     env.time_step_spec(),
     env.action_spec(),
     q_network=q_net,
+    n_step_update=20,
     optimizer=optimizer,
     td_errors_loss_fn=common.element_wise_squared_loss,
+    gradient_clipping=1.0,
     train_step_counter=train_step_counter)
 
 agent.initialize()
@@ -162,7 +164,7 @@ class ExperienceReply(object):
         self.dataset = self._replay_buffer.as_dataset(
             num_parallel_calls=3,
             sample_batch_size=64,
-            num_steps=2).prefetch(3)
+            num_steps=21).prefetch(3)
 
         self.iterator = iter(self.dataset)
 
@@ -184,12 +186,12 @@ avg_return = compute_avg_return(env, agent.policy, 1)
 returns = [avg_return]
 # iterator = iter(dataset)
 experience_replay = ExperienceReply(agent, env)
-for _ in range(10000):
+for _ in range(1000000):
 
     # Collect a few steps using collect_policy and save to the replay buffer.
     # collect_data(env, agent.collect_policy, replay_buffer, 1)
     # collect_data(env, random_policy, replay_buffer, 1)
-    for _ in range(100):
+    for _ in range(1):
         experience_replay.timestamp_data(env, agent.collect_policy)
 
     # Sample a batch of data from the buffer and update the agent's network.
@@ -204,7 +206,7 @@ for _ in range(10000):
     if step % 5 == 0:
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
-    if step % 400 == 0:
+    if step % 5000 == 0:
         avg_return = compute_avg_return(env, agent.policy, 2)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
         returns.append(avg_return)
