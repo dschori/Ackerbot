@@ -2,6 +2,7 @@ import time
 import sys
 from abc import ABC
 import math
+import gym
 
 import rospy
 
@@ -44,16 +45,18 @@ np.set_printoptions(threshold=sys.maxsize)
 
 default_sleep = 2
 
+rospy.init_node('neuroracer_qlearn', anonymous=True, log_level=rospy.INFO)
+
 print(register(
     id='NeuroRacer-v0',
-    entry_point='neuroracer_gym.tasks.neuroracer_discrete_task:NeuroRacerTfAgents',
+    entry_point='neuroracer_gym.tasks.neuroracer_discrete_task:NeuroRacerDiscreteTask',
     # timestep_limit=timestep_limit_per_episode,
 ))
 
 
 class NeuroRacerEnvNew():
     def __init__(self):
-
+        print("start init")
         self.gazebo = GazeboConnection(False, "SIMULATION")
         self.controllers_object = ControllersConnection(namespace="", controllers_list=[])
         self.initial_position = None
@@ -84,7 +87,7 @@ class NeuroRacerEnvNew():
 
         self.laser_subscription = rospy.Subscriber("/scan", LaserScan, self._laser_scan_callback)
 
-        self.odom_subscription = rospy.Subscriber("/vesc/odom", Odometry, self._odom_callback)
+        self.odom_subscription = rospy.Subscriber("ground_truth/state", Odometry, self._odom_callback)
 
         self.drive_control_publisher = rospy.Publisher("/vesc/ackermann_cmd_mux/input/navigation",
                                                        AckermannDriveStamped,
@@ -95,6 +98,7 @@ class NeuroRacerEnvNew():
         self.gazebo.pauseSim()
 
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
+        print("end init")
 
     def reset_position(self):
         if not self.initial_position:
@@ -131,10 +135,10 @@ class NeuroRacerEnvNew():
 
     def _check_odom_ready(self):
         self.odom = None
-        rospy.logdebug("Waiting for /vesc/odom to be READY...")
+        rospy.logdebug("Waiting for ground_truth/state to be READY...")
         while self.odom is None and not rospy.is_shutdown():
             try:
-                self.odom = rospy.wait_for_message('/vesc/odom',
+                self.odom = rospy.wait_for_message('ground_truth/state',
                                                    Odometry,
                                                    timeout=1.0)
             except:
@@ -251,7 +255,7 @@ class NeuroRacerEnvNew():
     def _process_scan(self):
         ranges = self.get_laser_scan().astype('float32')
         ranges = np.clip(ranges, 0.0, 10.0)
-        ranges_chunks = np.array_split(ranges, 20)
+        ranges_chunks = np.array_split(ranges, 30)
         ranges_mean = np.array([np.mean(chunk) for chunk in ranges_chunks])
         return ranges_mean
 
@@ -374,22 +378,32 @@ class NeuroRacerEnvNew():
 
 
 class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
-    def __init__(self):
+    def __init__(self, val=False):
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(), dtype=np.int32, minimum=0, maximum=2, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(20, ), dtype=np.float32, minimum=0., maximum=10.0, name='observation')
-        self._state = 0
+            shape=(30, ), dtype=np.float32, minimum=0., maximum=10.0, name='observation')
         self._episode_ended = False
         self._seed = 1
         self.rate = None
-        self.speed = 1.5
+        self.speed = 1.
         self.set_sleep_rate(100)
-        self.number_of_sleeps = 2
-        self.cumulated_steps = 0.0
+        self.number_of_sleeps = 8
+        self.cumulated_steps = 0
         self.cumulated_reward = 0.0
+        self.val = val
         self.time_now = time.time()
+        self.last_pos = (0.0, 0.0)
+        self.timer1 = time.time()
+        self.timer2 = time.time()
+        self.last_pos2 = (0.0, 0.0)
+        self.last_dist = 0.0
+        self.max_dist_away = 0.0
+        self.last_positions = []
+        self.x_min, self.x_max, self.y_min, self.y_max = 0.0, 0.0, 0.0, 0.0
+        self.max_area = 0.0
         super(NeuroRacerTfAgents, self).__init__()
+        self._state = self._get_obs()
 
     # def reward_spec(self):
     #    return tensor_spec.TensorSpec((1,), np.dtype('float32'), 'reward')
@@ -401,7 +415,18 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         return self._observation_spec
 
     def _reset(self):
+        self.max_area = 0.0
         self.gazebo.unpauseSim()
+        self.initial_position = {'p_x': -12.6, 'p_y': np.random.uniform(-1.6, -1.4), 'p_z': 0.05, 'o_x': 0, 'o_y': 0.0,
+                        'o_z': np.random.uniform(-1, -2), 'o_w': 2}
+        self.x_min, self.x_max, self.y_min, self.y_max = self.initial_position['p_x']-0.01, self.initial_position['p_x']+0.01, self.initial_position['p_y']-0.01, self.initial_position['p_y']+0.01
+        self.last_pos = (self.initial_position['p_x'], self.initial_position['p_y'])
+        self.max_dist_away = 0.0
+        self.timer1 = time.time()
+        self.timer2 = time.time()
+        self.cumulated_steps = 0
+        self.cumulated_reward = 0.0
+        self.last_pos2 = (self.initial_position['p_x'], self.initial_position['p_y'])
         self.reset_position()
 
         time.sleep(default_sleep)
@@ -414,25 +439,20 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
     def _set_action(self, action):
         self.gazebo.unpauseSim()
         steering_angle = 0
-
+        
         if action == 0:  # right
-            steering_angle = 1
+            steering_angle = -1
+            self.speed = 1
         elif action == 1:  # middle
             steering_angle = 0
+            self.speed = 1
         elif action == 2:  # left
-            steering_angle = -1
+            steering_angle = 1
+            self.speed = 1
         elif action == 3:  # backward
             steering_angle = 0
             self.speed = -1
-
-        if self._is_collided():
-            self.time_now = time.time()
-            self._episode_ended = True
-
-        if time.time() - self.time_now > 90.:
-            self.time_now = time.time()
-            # self._episode_ended = True
-
+            
         if not self._episode_ended:
             self.steering(steering_angle, self.speed)
             if self.rate:
@@ -446,27 +466,43 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         # action0: turn left, action1: turn right, action2: dont turn, action3: terminate
         if self._episode_ended:
             return self.reset()
+        
+        self.cumulated_steps += 1
 
         steering_angle = 0
 
         self._state = self._get_obs()
 
         self._set_action(action)
-
-        # reward = self._compute_reward(observations=None, done=False)
-
-        reward = self._compute_reward2()
+        
+        reward_1 = self._compute_reward_1()
+        reward_2 = self._compute_reward_2()
+        reward_3 = self._compute_reward_3()
+        reward_4 = self._compute_reward_4()
+        reward_6 = self._compute_reward_6()
+        cost_1 = self._compute_cost()
+        
+        reward = reward_4 + cost_1
+        #print(reward_4)
+        
+        if self.cumulated_steps % 50 == 0:
+            #print("Cumulated Reward: {}, Area: {}".format(int(self.cumulated_reward), int(self.last_area)))
+            pass
+        
         self.cumulated_reward += reward
+        
+        if self.cumulated_reward < -200.:
+            self._episode_ended = True
+            print("Too slow, Cumulated Reward: {}, n_steps: {}".format(int(self.cumulated_reward), self.cumulated_steps))
+            return ts.termination(np.array(self._state, dtype=np.float32), reward=0.)
 
-        if self._episode_ended:
+        if self._is_collided():
             self.time_now = time.time()
-            reward = -self.cumulated_reward
-            print('Cumulated Reward: {}'.format(reward))
-            self.cumulated_reward = 0.0
-            return ts.termination(np.array(self._state, dtype=np.float32), reward=reward)
-        else:
-            #print('Reward: {}'.format(reward))
-            return ts.transition(np.array(self._state, dtype=np.float32), reward=reward, discount=1.0)
+            self._episode_ended = True
+            print("Collided, Cumulated Reward: {}, n_steps: {}".format(int(self.cumulated_reward), self.cumulated_steps))
+            return ts.termination(np.array(self._state, dtype=np.float32), reward=-100.)
+            
+        return ts.transition(np.array(self._state, dtype=np.float32), reward=reward, discount=1.0)
 
     def set_sleep_rate(self, hz):
         self.rate = None
@@ -489,13 +525,107 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         left_distance = np.clip(ranges[895:905], None, 10).mean()
         middle_distance = np.clip(ranges[525:555], None, 10).mean()
         return rigth_distance, left_distance, middle_distance
-
-    def _compute_reward2(self):
+    
+    def _get_distance(self, a, b):
+        return math.hypot(a[0] - b[0], a[1] - b[1])
+    
+    def _get_pos_x_y(self):
         odom = self.get_odom()
         px = odom.pose.pose.position.x
         py = odom.pose.pose.position.y
-        dist = math.hypot(px - self.initial_position['p_x'], py - self.initial_position['p_y'])
-        return dist ** 1.2
+        return (px, py)
+        
+    def _compute_reward2(self):
+        px, py = self._get_pos_x_y()
+        dist = self._get_distance((px, py), (self.initial_position['p_x'], self.initial_position['p_y']))
+        return dist ** 2.
+    
+    def _compute_dist_from_origin(self):
+        px, py = self._get_pos_x_y()
+        dist = self._get_distance((px, py), (self.initial_position['p_x'], self.initial_position['p_y']))
+        return dist
+        
+    def _compute_d_pos(self):
+        px, py = self._get_pos_x_y()
+        dist = self._get_distance((px, py), (self.initial_position['p_x'], self.initial_position['p_y']))
+        d_pos = dist - self.last_dist
+        self.last_dist = dist
+        return d_pos
+    
+    def _compute_max_d_pos(self):
+        px, py = self._get_pos_x_y()
+        dist = self._get_distance((px, py), (self.initial_position['p_x'], self.initial_position['p_y']))
+        if dist > self.max_dist_away:
+            return_value = dist - self.max_dist_away
+            self.max_dist_away = dist
+            return return_value
+        else:
+            return 0.0
+    
+    def _compute_cost(self):
+        return -0.1
+    
+    def _compute_reward_1(self):
+        d_pos = self._compute_max_d_pos()
+        return d_pos*100
+    
+    def _compute_reward_2(self):
+        pos = self._get_pos_x_y()
+        self.last_positions.append(pos)
+        if len(self.last_positions) < 50:
+            return 0.0
+        else:
+            dist = self._get_distance(self.last_positions.pop(0), self._get_pos_x_y())
+            if dist < 0.8:
+                return -(self.cumulated_steps / 50.)
+            else:
+                return 0.0
+    
+    def _compute_reward_3(self):
+        return -(self.cumulated_steps / 300.)
+    
+    def _compute_reward_4(self):
+        pos = self._get_pos_x_y()
+        if self.x_min > pos[0]:
+            self.x_min = pos[0]
+        elif self.x_max < pos[0]:
+            self.x_max = pos[0]
+        if self.y_min > pos[1]:
+            self.y_min = pos[1]
+        elif self.y_max < pos[1]:
+            self.y_max = pos[1]
+        area = abs((self.x_max - self.x_min)) * abs((self.y_max - self.y_min))
+        if area > self.max_area:
+            return_value = area - self.max_area
+            self.max_area = area
+            return return_value*20.
+        else:
+            return 0.0
+    
+    def _compute_reward_5(self):
+        right, left, middke = self._get_distances2()
+        reward = 0.0
+        goal = 0.9
+        if 0.7 < left < 1.1:
+            return 10
+        elif left > goal:
+            tmp = left - goal
+            reward = tmp*3
+            reward = min(20, reward)
+            return -reward
+        else:
+            tmp = goal - left
+            reward = tmp*8
+            reward = min(20, reward)
+            return -reward
+    
+    def _compute_reward_6(self):
+        right, left, middke = self._get_distances2()
+        reward = 3
+        goal = 0.9
+        diff = abs(left-goal)
+        reward -= diff**3
+        return max(reward, -3)
 
     def _compute_reward3(self):
         ranges = self.get_laser_scan()
@@ -504,9 +634,9 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         reward = min(100., reward) - 50.
         return reward
 
-    def _compute_reward(self, observations, done):
+    def _compute_reward_old(self, done):
         if not done:
-            rigth_distance, left_distance, middle_distance = self._get_distances()
+            rigth_distance, left_distance, middle_distance = self._get_distances2()
             #             print(left_distance, middle_distance, rigth_distance)
             reward = (middle_distance - 3) - np.abs(left_distance - rigth_distance)
         #             if self.last_action!=1:
@@ -514,24 +644,32 @@ class NeuroRacerTfAgents(NeuroRacerEnvNew, py_environment.PyEnvironment):
         else:
             reward = -100
 
-        # self.cumulated_reward += reward
-        # self.cumulated_steps += 1
-
         return reward
 
+    def _get_distances2(self):
+        ranges = self.get_laser_scan()
+        rigth_distance = np.clip(ranges[225:275], None, 10).mean()
+        left_distance = np.clip(ranges[725:775], None, 10).mean()
+        middle_distance = np.clip(ranges[475:525], None, 10).mean()
+        return rigth_distance, left_distance, middle_distance
 
-class NeuroRacerDiscreteTask(neuroracer_env.NeuroRacerEnv):
+
+class NeuroRacerDiscreteTask(NeuroRacerEnvNew, gym.Env):
     def __init__(self):
         self.cumulated_steps = 0.0
+        self.cumulated_reward = 0.0
+        self.current_step = 0
         self.last_action = 1
         self.right_left = 0
         self.action_space = spaces.Discrete(3)
         self.rate = None
-        self.speed = 1
+        self.speed = 1.5
         self.set_sleep_rate(100)
-        self.number_of_sleeps = 10
-
-        super(NeuroRacerDiscreteTask, self).__init__()
+        self.number_of_sleeps = 4
+        self.observation_space = spaces.Box(low=0, high=10, shape=
+                    (1, 1000), dtype=np.float32)
+        print('init')
+        #super(NeuroRacerDiscreteTask, self).__init__()
 
     def set_sleep_rate(self, hz):
         self.rate = None
@@ -555,9 +693,20 @@ class NeuroRacerDiscreteTask(neuroracer_env.NeuroRacerEnv):
         middle_distance = np.clip(ranges[525:555], None, 10).mean()
         return rigth_distance, left_distance, middle_distance
 
+    def _get_distances2(self):
+        ranges = self.get_laser_scan()
+        rigth_distance = np.clip(ranges[225:275], None, 10).mean()
+        left_distance = np.clip(ranges[725:775], None, 10).mean()
+        middle_distance = np.clip(ranges[475:525], None, 10).mean()
+        return rigth_distance, left_distance, middle_distance
+    
+    def _compute_reward_new(self):
+        ranges = self.get_laser_scan()
+        rigth_distance, left_distance, middle_distance = self._get_distances2()
+
     def _compute_reward(self, observations, done):
         if not done:
-            rigth_distance, left_distance, middle_distance = self._get_distances()
+            rigth_distance, left_distance, middle_distance = self._get_distances2()
             #             print(left_distance, middle_distance, rigth_distance)
             reward = (middle_distance - 3) - np.abs(left_distance - rigth_distance)
         #             if self.last_action!=1:
@@ -569,6 +718,45 @@ class NeuroRacerDiscreteTask(neuroracer_env.NeuroRacerEnv):
         self.cumulated_steps += 1
 
         return reward
+
+    def reset(self):
+        self.gazebo.unpauseSim()
+        self.cumulated_reward = 0.0
+        self.initial_position = {'p_x': np.random.uniform(-.1, .1), 'p_y': np.random.uniform(-.1, .1), 'p_z': 0.05, 'o_x': 0, 'o_y': 0.0,
+                        'o_z': np.random.uniform(-3, 3), 'o_w': 2}
+        self.reset_position()
+
+        time.sleep(default_sleep)
+        self.gazebo.pauseSim()
+
+        return self._get_obs()
+    
+    def step(self, action):
+        # action0: turn left, action1: turn right, action2: dont turn, action3: terminate
+        self.current_step += 1
+
+        self._set_action(action)
+        
+        reward_4 = self._compute_reward_4()
+        cost_1 = self._compute_cost()
+        
+        reward = reward_4 + cost_1
+        
+        self.cumulated_reward += reward
+        
+        obs = self._get_obs().reshape(1, 1000)
+        
+        if self.cumulated_reward < -200.:
+            self._episode_ended = True
+            print("Too slow, Cumulated Reward: {}, n_steps: {}".format(int(self.cumulated_reward), self.cumulated_steps))
+            return obs, 0.0, True, {}
+
+        if self._is_collided():
+            print("Collided, Cumulated Reward: {}, n_steps: {}".format(int(self.cumulated_reward), self.cumulated_steps))
+            return obs, -100., True, {}
+            
+        return obs, reward, False, {}
+
 
     def _set_action(self, action):
         steering_angle = 0
@@ -584,10 +772,31 @@ class NeuroRacerDiscreteTask(neuroracer_env.NeuroRacerEnv):
             self.right_left += 1
 
         #         self.right_left =  action != 1 & self.last_action != 1 & self.last_action != action
-
         self.last_action = action
         self.steering(steering_angle, self.speed)
         if self.rate:
             for i in range(int(self.number_of_sleeps)):
                 self.rate.sleep()
                 self.steering(steering_angle, self.speed)
+        print("was here")
+    
+    def _compute_cost(self):
+        return -0.1
+    
+    def _compute_reward_4(self):
+        pos = self._get_pos_x_y()
+        if self.x_min > pos[0]:
+            self.x_min = pos[0]
+        elif self.x_max < pos[0]:
+            self.x_max = pos[0]
+        if self.y_min > pos[1]:
+            self.y_min = pos[1]
+        elif self.y_max < pos[1]:
+            self.y_max = pos[1]
+        area = abs((self.x_max - self.x_min)) * abs((self.y_max - self.y_min))
+        if area > self.max_area:
+            return_value = area - self.max_area
+            self.max_area = area
+            return return_value*20.
+        else:
+            return 0.0
