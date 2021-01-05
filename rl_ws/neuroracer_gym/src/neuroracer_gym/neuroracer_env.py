@@ -56,7 +56,7 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
         # self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
-        self._init_camera()
+        # self._init_camera()
 
         self.laser_subscription = rospy.Subscriber("/scan", LaserScan, self._laser_scan_callback)
 
@@ -69,6 +69,7 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.gazebo.pauseSim()
 
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
+        print("init done")
 
     def reset_position(self):
         if not self.initial_position:
@@ -88,6 +89,8 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
     def reset(self):
         super(NeuroRacerEnv, self).reset()
         self.gazebo.unpauseSim()
+        self.initial_position = {'p_x': np.random.uniform(-.1, .1), 'p_y': np.random.uniform(-.1, .1), 'p_z': 0.05, 'o_x': 0, 'o_y': 0.0,
+                        'o_z': np.random.uniform(-3, 3), 'o_w': 2}
         self.reset_position()
 
         time.sleep(default_sleep)
@@ -214,10 +217,17 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _get_obs(self):
-        return self.get_camera_image()
+        return self._process_scan()
         # laser_scan = self.get_laser_scan()[:1000].reshape((25, 40, 1))
         # print(laser_scan.shape)
         # return laser_scan.reshape((25, 40))
+
+    def _process_scan(self):
+        ranges = self.get_laser_scan().astype('float32')
+        ranges = np.clip(ranges, 0.0, 10.0) / 10.0
+        ranges_chunks = np.array_split(ranges, 100)
+        ranges_mean = np.array([np.mean(chunk) for chunk in ranges_chunks])
+        return ranges_mean
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()
