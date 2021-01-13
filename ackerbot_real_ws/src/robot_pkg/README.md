@@ -3,7 +3,7 @@
 ```
 1. On the robot go to MasterThesis/ackerbot_real_ws/src/
 2. Open Terminal here
-3. Close all other Applications (because of enough system memory)
+3. Close all other Applications (to have enough system memory)
 4. sudo docker build -t dschori/ackerbot:real -f Dockerfile .
 ```
 
