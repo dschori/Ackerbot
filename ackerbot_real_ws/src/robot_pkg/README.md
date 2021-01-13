@@ -22,7 +22,7 @@ sudo docker rm -f ackerbot
 
 catkin build -j2  
 ```
-
+### Then:
 ```
 sudo docker run -it --rm --privileged --net=host --name ackerbot \
 -v ~/MasterThesis/ackerbot_real_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
