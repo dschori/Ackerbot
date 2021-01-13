@@ -11,10 +11,10 @@
 
 ```
 sudo docker run -it --privileged --net=host --name weed_bot \
--v ~/MasterThesis/catkin_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
--v ~/MasterThesis/catkin_ws/build:/workspace/catkin_ws/build \
--v ~/MasterThesis/catkin_ws/devel:/workspace/catkin_ws/devel \
--v ~/MasterThesis/catkin_ws/logs:/workspace/catkin_ws/logs \
+-v ~/MasterThesis/ackerbot_real_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
+-v ~/MasterThesis/ackerbot_real_ws/build:/workspace/catkin_ws/build \
+-v ~/MasterThesis/ackerbot_real_ws/devel:/workspace/catkin_ws/devel \
+-v ~/MasterThesis/ackerbot_real_ws/logs:/workspace/catkin_ws/logs \
 dschori/ackerbot:real bash
 ```
 
