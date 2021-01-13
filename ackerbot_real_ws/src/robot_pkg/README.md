@@ -3,18 +3,32 @@
 ```
 1. On the robot go to MasterThesis/ackerbot_real_ws/src/
 2. Open Terminal here
-3. Close all other Applications (because of enough system memory)
+3. Close all other Applications (to have enough system memory)
 4. sudo docker build -t dschori/ackerbot:real -f Dockerfile .
 ```
 
 ## Starting the docker container:
 
+### Only the first time:
+
 ```
-sudo docker run -it --privileged --net=host --name weed_bot \
--v /home/dschori/MasterThesis/catkin_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
--v /home/dschori/MasterThesis/catkin_ws/build:/workspace/catkin_ws/build \
--v /home/dschori/MasterThesis/catkin_ws/devel:/workspace/catkin_ws/devel \
--v /home/dschori/MasterThesis/catkin_ws/logs:/workspace/catkin_ws/logs \
+sudo docker run -d --name ackerbot dschori/ackerbot:real
+
+sudo docker cp ackerbot:/workspace/catkin_ws/build ~/MasterThesis/ackerbot_real_ws/build
+sudo docker cp ackerbot:/workspace/catkin_ws/devel ~/MasterThesis/ackerbot_real_ws/devel
+sudo docker cp ackerbot:/workspace/catkin_ws/logs ~/MasterThesis/ackerbot_real_ws/logs  
+
+sudo docker rm -f ackerbot  
+
+catkin build -j2  
+```
+### Then:
+```
+sudo docker run -it --rm --privileged --net=host --name ackerbot \
+-v ~/MasterThesis/ackerbot_real_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
+-v ~/MasterThesis/ackerbot_real_ws/build:/workspace/catkin_ws/build \
+-v ~/MasterThesis/ackerbot_real_ws/devel:/workspace/catkin_ws/devel \
+-v ~/MasterThesis/ackerbot_real_ws/logs:/workspace/catkin_ws/logs \
 dschori/ackerbot:real bash
 ```
 
@@ -30,7 +44,14 @@ then: source/devel/setup.bash
 `  
 
 ### Starting the sensors launch file:
+
+Open a new Terminal and go into the running container:  
 ```
+sudo docker exec -it ackerbot bash
+```  
+Inside the container type:  
+```
+source devel/setup.bash
 roslaunch robot_pkg sensors.launch
 ```
 
