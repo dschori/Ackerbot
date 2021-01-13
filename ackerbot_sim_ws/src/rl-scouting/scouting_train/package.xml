@@ -10,9 +10,9 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>neuroracer_gym</build_depend>
+  <build_depend>scouting_gym</build_depend>
   <build_depend>rospy</build_depend>
-  <exec_depend>neuroracer_gym</exec_depend>
+  <exec_depend>scouting_gym</exec_depend>
   <exec_depend>rospy</exec_depend>
 
   <export>

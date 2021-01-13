@@ -3,7 +3,7 @@ import sys
 
 import rospy
 
-from neuroracer_gym import neuroracer_env
+from scouting_gym import scouting_env
 
 from gym import spaces
 from gym.envs.registration import register
@@ -17,13 +17,13 @@ np.set_printoptions(threshold=sys.maxsize)
 default_sleep = 2
 
 print(register(
-    id='NeuroRacer-v0',
-    entry_point='neuroracer_gym.tasks.neuroracer_discrete_task:NeuroRacerDiscreteTask',
+    id='Scouting-v0',
+    entry_point='scouting_gym.tasks.scouting_discrete_task:ScoutingDiscreteTask',
     # timestep_limit=timestep_limit_per_episode,
 ))
 
 
-class NeuroRacerDiscreteTask(neuroracer_env.NeuroRacerEnv):
+class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
     def __init__(self, env_config=None):
         rospy.init_node('neuroracer_qlearn2', anonymous=True, log_level=rospy.INFO)
         self.cumulated_steps = 0.0
@@ -34,7 +34,7 @@ class NeuroRacerDiscreteTask(neuroracer_env.NeuroRacerEnv):
         self.speed = 1
         self.set_sleep_rate(100)
         self.number_of_sleeps = 4
-        super(NeuroRacerDiscreteTask, self).__init__()
+        super(ScoutingDiscreteTask, self).__init__()
 
     def set_sleep_rate(self, hz):
         self.rate = None

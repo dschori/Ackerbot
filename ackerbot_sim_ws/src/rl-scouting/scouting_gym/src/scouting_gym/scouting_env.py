@@ -24,7 +24,7 @@ from gym.envs.registration import register
 default_sleep = 1
 
 
-class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
+class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self):
 
         self.initial_position = None
@@ -44,10 +44,10 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.robot_name_space = ""
 
         # We launch the init function of the Parent Class robot_gazebo_env.RobotGazeboEnv
-        super(NeuroRacerEnv, self).__init__(controllers_list=self.controllers_list,
-                                            robot_name_space=self.robot_name_space,
-                                            reset_controls=False,
-                                            start_init_physics_parameters=False)
+        super(ScoutingEnv, self).__init__(controllers_list=self.controllers_list,
+                                          robot_name_space=self.robot_name_space,
+                                          reset_controls=False,
+                                          start_init_physics_parameters=False)
 
         rospy.wait_for_service('/gazebo/set_model_state')
         try:
@@ -81,17 +81,17 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _get_ini_position(self, init, not_p=None):
         if not_p is None:
-            p = np.random.randint(0, 5)
+            p = np.random.randint(0, 1)
         else:
             while True:
                 p = np.random.randint(0, 5)
                 if p != not_p:
                     break
-        p_x, p_y, o_z = 0.0, 0.0, np.random.uniform(-3.0, 3.0)
-        p_z, o_x, o_y, o_w = 0.05, 0.0, 0.0, np.random.uniform(-3.0, 3.0)
+        p_x, p_y, p_z = 0.0, 0.0, 0.05
+        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
         if p == 0:
-            p_x = np.random.uniform(-1, 1)
-            p_y = np.random.uniform(1, 2)
+            p_x = np.random.uniform(-0.5, 0.5)
+            p_y = np.random.uniform(0.0, 0.5)
         elif p == 1:
             p_x = np.random.uniform(-4.5, -4.2)
             p_y = np.random.uniform(-30, -25)
@@ -107,7 +107,7 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
 
         if init:
             return {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                'o_y': o_y, 'o_z': o_z, 'o_w': o_w}, p
+                    'o_y': o_y, 'o_z': o_z, 'o_w': o_w}, p
         else:
             return (p_x, p_y), p
 
@@ -127,9 +127,9 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
         self.set_model_state(state_msg)
 
     def reset(self):
-        super(NeuroRacerEnv, self).reset()
+        super(ScoutingEnv, self).reset()
         self.steps_count = 0
-        #self.initial_position = {'p_x': 2, 'p_y': np.random.uniform(8, 9), 'p_z': 0.05, 'o_x': 0,
+        # self.initial_position = {'p_x': 2, 'p_y': np.random.uniform(8, 9), 'p_z': 0.05, 'o_x': 0,
         #                         'o_y': 0.0, 'o_z': np.random.uniform(-1.5, -2.0), 'o_w': -0.8}
         self.initial_position, p = self._get_ini_position(init=True)
         self.target_pos, p = self._get_ini_position(init=False)
@@ -191,8 +191,8 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # self.color_scale = "bgr8" # config["color_scale"]
         self.input_shape = (300,)
-        #obs_low = np.append(np.zeros(300), np.array((-100., -100)))
-        #obs_high = np.append(np.ones(300) * 10., np.array((100., 100)))
+        # obs_low = np.append(np.zeros(300), np.array((-100., -100)))
+        # obs_high = np.append(np.ones(300) * 10., np.array((100., 100)))
         obs_low = 0.0
         obs_high = 10.0
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, shape=self.input_shape)
@@ -291,7 +291,7 @@ class NeuroRacerEnv(robot_gazebo_env.RobotGazeboEnv):
             y -= self.initial_position['p_y']
         # (ox, oy, oz, ow) = self._get_orientation()
         return scan
-        #return np.append(scan, np.array((x, y)))
+        # return np.append(scan, np.array((x, y)))
 
     def get_odom(self):
         return self.odom
