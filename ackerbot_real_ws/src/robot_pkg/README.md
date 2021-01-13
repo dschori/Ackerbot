@@ -1,7 +1,10 @@
 ## Building the docker image:
 
 ```
-sudo docker build -t ros-noetic-realsense -f Dockerfile.ros.noetic .
+1. On the robot go to MasterThesis/ackerbot_real_ws/src/
+2. Open Terminal here
+3. Close all other Applications (because of enough system memory)
+4. sudo docker build -t ackerbot-real -f Dockerfile .
 ```
 
 ## Starting the docker container:
@@ -12,7 +15,7 @@ sudo docker run -it --privileged --net=host --name weed_bot \
 -v /home/dschori/MasterThesis/catkin_ws/build:/workspace/catkin_ws/build \
 -v /home/dschori/MasterThesis/catkin_ws/devel:/workspace/catkin_ws/devel \
 -v /home/dschori/MasterThesis/catkin_ws/logs:/workspace/catkin_ws/logs \
-ros-noetic-realsense bash
+ackerbot-real bash
 ```
 
 ### Building and sourcing
