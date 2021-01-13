@@ -16,11 +16,11 @@ sudo docker run -d --name ackerbot dschori/ackerbot:real
 
 sudo docker cp ackerbot:/workspace/catkin_ws/build ~/MasterThesis/ackerbot_real_ws/build
 sudo docker cp ackerbot:/workspace/catkin_ws/devel ~/MasterThesis/ackerbot_real_ws/devel
-sudo docker cp ackerbot:/workspace/catkin_ws/logs ~/MasterThesis/ackerbot_real_ws/logs
+sudo docker cp ackerbot:/workspace/catkin_ws/logs ~/MasterThesis/ackerbot_real_ws/logs  
 
-sudo docker rm -f ackerbot
+sudo docker rm -f ackerbot  
 
-catkin build -j2
+catkin build -j2  
 ```
 
 ```
