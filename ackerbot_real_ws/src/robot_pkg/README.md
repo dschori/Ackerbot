@@ -9,8 +9,22 @@
 
 ## Starting the docker container:
 
+### Only the first time:
+
 ```
-sudo docker run -it --privileged --net=host --name weed_bot \
+sudo docker run -d --name ackerbot dschori/ackerbot:real
+
+sudo docker cp ackerbot:/workspace/catkin_ws/build ~/MasterThesis/ackerbot_real_ws/build
+sudo docker cp ackerbot:/workspace/catkin_ws/devel ~/MasterThesis/ackerbot_real_ws/devel
+sudo docker cp ackerbot:/workspace/catkin_ws/logs ~/MasterThesis/ackerbot_real_ws/logs
+
+sudo docker rm -f ackerbot
+
+catkin build -j2
+```
+
+```
+sudo docker run -it --rm --privileged --net=host --name ackerbot \
 -v ~/MasterThesis/ackerbot_real_ws/src/robot_pkg:/workspace/catkin_ws/src/robot_pkg \
 -v ~/MasterThesis/ackerbot_real_ws/build:/workspace/catkin_ws/build \
 -v ~/MasterThesis/ackerbot_real_ws/devel:/workspace/catkin_ws/devel \
