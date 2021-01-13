@@ -44,7 +44,14 @@ then: source/devel/setup.bash
 `  
 
 ### Starting the sensors launch file:
+
+Open a new Terminal and go into the running container:  
 ```
+sudo docker exec -it ackerbot bash
+```  
+Inside the container type:  
+```
+source devel/setup.bash
 roslaunch robot_pkg sensors.launch
 ```
 
