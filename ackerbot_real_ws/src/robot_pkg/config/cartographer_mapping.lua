@@ -58,12 +58,15 @@ TRAJECTORY_BUILDER_2D.imu_gravity_time_constant = 1
 
 POSE_GRAPH.optimization_problem.huber_scale = 1e2
 
-POSE_GRAPH.optimize_every_n_nodes = 90
+-- Set this to zero to disable global SLAM
+POSE_GRAPH.optimize_every_n_nodes = 5
 
 POSE_GRAPH.optimization_problem.local_slam_pose_translation_weight = 100
 POSE_GRAPH.optimization_problem.local_slam_pose_rotation_weight = 100
 POSE_GRAPH.optimization_problem.odometry_translation_weight = 50
 POSE_GRAPH.optimization_problem.odometry_rotation_weight = 50
+
+POSE_GRAPH.optimization_problem.log_solver_summary = false
 
 return options
 
