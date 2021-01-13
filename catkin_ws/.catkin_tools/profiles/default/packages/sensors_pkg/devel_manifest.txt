@@ -1,5 +1,0 @@
-sensors_pkg
-/home/dschori/MasterThesis/catkin_ws/devel/.private/sensors_pkg/cmake.lock /home/dschori/MasterThesis/catkin_ws/devel/./cmake.lock
-/home/dschori/MasterThesis/catkin_ws/devel/.private/sensors_pkg/share/sensors_pkg/cmake/sensors_pkgConfig.cmake /home/dschori/MasterThesis/catkin_ws/devel/share/sensors_pkg/cmake/sensors_pkgConfig.cmake
-/home/dschori/MasterThesis/catkin_ws/devel/.private/sensors_pkg/share/sensors_pkg/cmake/sensors_pkgConfig-version.cmake /home/dschori/MasterThesis/catkin_ws/devel/share/sensors_pkg/cmake/sensors_pkgConfig-version.cmake
-/home/dschori/MasterThesis/catkin_ws/devel/.private/sensors_pkg/lib/pkgconfig/sensors_pkg.pc /home/dschori/MasterThesis/catkin_ws/devel/lib/pkgconfig/sensors_pkg.pc

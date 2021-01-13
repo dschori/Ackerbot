@@ -144,9 +144,9 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
             return 500.
         if not done:
             # for 300 laserscan
-            left_dist = obs[223:227].mean()
-            right_dist = obs[73:77].mean()
-            front_dist = obs[148:152].mean()
+            left_dist = obs[370:380].mean()
+            right_dist = obs[120:130].mean()
+            front_dist = obs[245:255].mean()
             if left_dist < 0.6 or right_dist < 0.6 or front_dist < 0.6:
                 return -1.5
             elif action == 1:

@@ -1,5 +1,0 @@
-robot_pkg_backup/src/selfie_simulator/selfie_sim_control
-/home/dschori/MasterThesis/catkin_ws/devel/.private/selfie_sim_control/cmake.lock /home/dschori/MasterThesis/catkin_ws/devel/./cmake.lock
-/home/dschori/MasterThesis/catkin_ws/devel/.private/selfie_sim_control/share/selfie_sim_control/cmake/selfie_sim_controlConfig.cmake /home/dschori/MasterThesis/catkin_ws/devel/share/selfie_sim_control/cmake/selfie_sim_controlConfig.cmake
-/home/dschori/MasterThesis/catkin_ws/devel/.private/selfie_sim_control/share/selfie_sim_control/cmake/selfie_sim_controlConfig-version.cmake /home/dschori/MasterThesis/catkin_ws/devel/share/selfie_sim_control/cmake/selfie_sim_controlConfig-version.cmake
-/home/dschori/MasterThesis/catkin_ws/devel/.private/selfie_sim_control/lib/pkgconfig/selfie_sim_control.pc /home/dschori/MasterThesis/catkin_ws/devel/lib/pkgconfig/selfie_sim_control.pc

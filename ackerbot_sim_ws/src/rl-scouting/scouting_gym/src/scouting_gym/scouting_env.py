@@ -190,7 +190,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         img = self.get_camera_image()
 
         # self.color_scale = "bgr8" # config["color_scale"]
-        self.input_shape = (300,)
+        self.input_shape = (500,)
         # obs_low = np.append(np.zeros(300), np.array((-100., -100)))
         # obs_high = np.append(np.ones(300) * 10., np.array((100., 100)))
         obs_low = 0.0
@@ -321,9 +321,9 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def _process_scan(self):
         ranges = self.get_laser_scan().astype('float32')
         ranges = np.clip(ranges, 0.0, 10.0)
-        ranges_chunks = np.array_split(ranges, 300)
+        ranges_chunks = np.array_split(ranges, 500)
         ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
-        return ranges_mean.reshape(300, )
+        return ranges_mean.reshape(500, )
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()
