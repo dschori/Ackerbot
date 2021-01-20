@@ -13,6 +13,8 @@ from cv_bridge import CvBridge, CvBridgeError
 # from std_msgs.msg import Float64
 # from sensor_msgs.msg import Image
 # from tf.transformations import quaternion_from_euler
+import matplotlib.pyplot as plt
+from pathlib import Path
 
 from ackermann_msgs.msg import AckermannDriveStamped
 
@@ -77,6 +79,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.x_min, self.x_max, self.y_min, self.y_max = 0.0, 0.0, 0.0, 0.0
         self.max_area = 0.0
+        self.obs_save_ind = 0
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
     def _get_ini_position(self, init, not_p=None):
@@ -195,7 +198,8 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         # obs_high = np.append(np.ones(300) * 10., np.array((100., 100)))
         obs_low = 0.0
         obs_high = 10.0
-        self.observation_space = spaces.Box(low=obs_low, high=obs_high, shape=self.input_shape)
+        #self.observation_space = spaces.Box(low=obs_low, high=obs_high, shape=self.input_shape)
+        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(40, 128, 1))
         # self.observation_space = spaces.Discrete(low=obs_low, high=obs_high, shape=self.input_shape)
 
         img_dims = img.shape[0] * img.shape[1] * img.shape[2]
@@ -281,6 +285,16 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _get_obs(self):
+        scan = self._process_scan() / 10.
+        #self.scans = np.append(self.scans, scan.reshape(1, 128), axis=0)
+        #self.scans = np.delete(self.scans, 0, axis=0)
+        self.scans = np.insert(self.scans, 0, scan.reshape(1, 128), axis=0)
+        self.scans = np.delete(self.scans, -1, axis=0)
+        #plt.imsave('{}/img_logs/obs_{}.jpg'.format(Path.home(), self.obs_save_ind), self.scans)
+        #self.obs_save_ind += 1
+        return self.scans.reshape((40, 128, 1))
+
+    def _get_obs_old(self):
         scan = self._process_scan()
         # scan = self.get_laser_scan().astype('float32')
         # scan = np.clip(scan, None, 10.0) / 10.0
@@ -321,9 +335,9 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def _process_scan(self):
         ranges = self.get_laser_scan().astype('float32')
         ranges = np.clip(ranges, 0.0, 10.0)
-        ranges_chunks = np.array_split(ranges, 500)
-        ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
-        return ranges_mean.reshape(500, )
+        ranges_chunks = np.array_split(ranges, 128)
+        ranges_mean = np.array([np.mean(chunk) for chunk in ranges_chunks])
+        return ranges_mean.reshape(128, )
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()

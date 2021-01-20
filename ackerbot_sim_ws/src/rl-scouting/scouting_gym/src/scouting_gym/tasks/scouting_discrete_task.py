@@ -99,23 +99,39 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
                 self.steering(steering_angle, self.speed)
 
     def _compute_reward(self, obs, action, done):
+        reward1 = 0.
+        reward2 = 0.
+        ranges = self.get_laser_scan()
+        if not done:
+            if np.min(ranges) < 0.4:
+                reward1 = -0.25 * (1 - np.min(ranges))
+        else:
+            reward1 = -10.
+        right_dist = np.mean(ranges[200:300])
+        if 0.6 < right_dist < 0.9:
+            reward2 = 0.25
+        else:
+            reward2 = -0.05
+
+        reward = reward1 + reward2
+        return reward
+
+
+    def _compute_reward_last(self, obs, action, done):
         # drive along right side
         if not done:
             #ranges = self.get_laser_scan()
             #left_dist = np.clip(ranges[730:770], None, 10).mean()
-            # for 300 laserscan
-            left_dist = obs[370:380].mean()
-            right_dist = obs[120:130].mean()
-            front_dist = obs[245:255].mean()
-            if 0.45 < right_dist < 1.5:
-                if 0.6 < right_dist < 0.9:
-                    return 1.0
-                else:
-                    return 0.25
+            # for 500 laserscan
+            left_dist = np.median(obs[370:380])
+            right_dist = np.mean(obs[100:150])
+            front_dist = np.median(obs[245:255])
+            if 0.6 < right_dist < 0.9:
+                return 1.0
             else:
                 return -0.05
         else:
-            return -200.
+            return -100.
 
     def _compute_reward_area(self, obs, done):
         if not done:
@@ -136,7 +152,7 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
             else:
                 return -0.05
         else:
-            return -200.
+            return -10.
 
     def _compute_reward_new(self, obs, action, finished, done):
         # drive along right side
