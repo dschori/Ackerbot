@@ -1,6 +1,6 @@
 import time
 import sys
-
+import math
 import rospy
 
 from scouting_gym import scouting_env
@@ -26,14 +26,15 @@ print(register(
 class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
     def __init__(self, env_config=None):
         rospy.init_node('neuroracer_qlearn2', anonymous=True, log_level=rospy.INFO)
-        self.cumulated_steps = 0.0
         self.last_action = 1
         self.right_left = 0
-        self.action_space = spaces.Discrete(3)
+        #self.action_space = spaces.Discrete(3)
+        #self.action_space = spaces.Box(low=np.array([-0.6, 0.2]), high=np.array([0.6, 1.0]), shape=(2, ), dtype=np.float32)
+        self.action_space = spaces.Box(low=-0.6, high=0.6, shape=(1, ), dtype=np.float32)
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
-        self.number_of_sleeps = 4
+        self.number_of_sleeps = 10
         super(ScoutingDiscreteTask, self).__init__()
 
     def set_sleep_rate(self, hz):
@@ -58,38 +59,11 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         middle_distance = np.clip(ranges[525:555], None, 10).mean()
         return rigth_distance, left_distance, middle_distance
 
-    def _compute_reward_old(self, observations, done):
-        if not done:
-            rigth_distance, left_distance, middle_distance = self._get_distances()
-            #             print(left_distance, middle_distance, rigth_distance)
-            reward = (middle_distance - 3) - np.abs(left_distance - rigth_distance)
-        #             if self.last_action!=1:
-        #                 reward-=0.001*(1.7**self.right_left - 1)
-        else:
-            reward = -100
-
-        self.cumulated_reward += reward
-        self.cumulated_steps += 1
-
-        return reward
-
     def _set_action(self, action):
-        steering_angle = 0
-        self.speed = 1
-        if action == 0:  # right
-            steering_angle = -1
-        if action == 2:  # left
-            steering_angle = 1
-        if action == 3:  # stop
-            steering_angle = 0
-            self.speed = 0
-
-        if action == 1:
-            self.right_left = 0
-        else:
-            self.right_left += 1
-
-        #         self.right_left =  action != 1 & self.last_action != 1 & self.last_action != action
+        self.cumulated_steps += 1
+        self._update_dyn1()
+        steering_angle = action[0]
+        self.speed = 1.
 
         self.last_action = action
         self.steering(steering_angle, self.speed)
@@ -98,9 +72,31 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
                 self.rate.sleep()
                 self.steering(steering_angle, self.speed)
 
-    def _compute_reward(self, obs, action, done):
+    def _set_action_distrecte(self, action):
+        steering_angle = 0
+        self.speed = 1.2
+        if action == 0:  # right
+            steering_angle = -0.6
+            self.speed = 0.6
+        elif action == 1:  # middle
+            steering_angle = 0
+            self.speed = 1.0
+        elif action == 2:  # left
+            steering_angle = 0.6
+            self.speed = 0.6
+
+        self.last_action = action
+        self.steering(steering_angle, self.speed)
+        if self.rate:
+            for i in range(int(self.number_of_sleeps)):
+                self.rate.sleep()
+                self.steering(steering_angle, self.speed)
+
+    def _compute_reward_old(self, obs, action, done, finished):
         reward1 = 0.
         reward2 = 0.
+        reward3 = 0.
+        reward4 = 0.
         ranges = self.get_laser_scan()
         if not done:
             if np.min(ranges) < 0.4:
@@ -113,61 +109,67 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         else:
             reward2 = -0.05
 
+        pos_x, pos_y = self._get_pos_x_y()
+        if math.dist([pos_x, pos_y], [self.target_p[0], self.target_p[1]]) < 0.4:
+            reward3 = 10
+        else:
+            #reward3 = -0.01 * (math.dist([pos_x, pos_y], [self.target_p[0], self.target_p[1]]) / math.dist([self.initial_position['p_x'], self.initial_position['p_y']], [self.target_p[0], self.target_p[1]]))
+            reward3 = -0.01 * (math.dist([self.target_p[0], self.target_p[1]], [pos_x, pos_y]) / math.dist([self.initial_position['p_x'], self.initial_position['p_y']], [pos_x, pos_y]))
+
+        if math.dist([pos_x, pos_y], [self.target_p[0], self.target_p[1]]) > 0.4 and action == 3:
+            reward4 = -.1
+
+        reward5 = 0.
+        if action == 1:
+            reward5 = 0.01
+
+        reward = reward1 + reward3 + reward4
         reward = reward1 + reward2
+        self.reward_publisher.publish(reward)
         return reward
 
-
-    def _compute_reward_last(self, obs, action, done):
-        # drive along right side
+    def _compute_reward(self, obs, action, done, finished):
+        if finished:
+            self.reward_publisher.publish(100.)
+            return 100.
         if not done:
-            #ranges = self.get_laser_scan()
-            #left_dist = np.clip(ranges[730:770], None, 10).mean()
-            # for 500 laserscan
-            left_dist = np.median(obs[370:380])
-            right_dist = np.mean(obs[100:150])
-            front_dist = np.median(obs[245:255])
-            if 0.6 < right_dist < 0.9:
-                return 1.0
+            reward1 = 0.
+            pos_x, pos_y = self._get_pos_x_y()
+            d = self._get_distance((pos_x, pos_y), (self.target_p[0], self.target_p[1]))
+            p_x, p_y = abs(self.target_p[0] - pos_x), abs(self.target_p[1] - pos_y)
+            if d < self.last_d:
+                dt = self.last_d - d
+                self.last_d = d
+                reward1 = dt*2
             else:
-                return -0.05
+                reward1 = -0.001
+
+            ranges = self.get_laser_scan()
+            if np.min(ranges) < 0.5:
+                reward1 += -0.25 * (1 - np.min(ranges))
+
+            self.reward_publisher.publish(reward1)
+            return reward1
         else:
+            self.reward_publisher.publish(-100.)
             return -100.
 
-    def _compute_reward_area(self, obs, done):
-        if not done:
-            pos = self._get_pos_x_y()
-            if self.x_min > pos[0]:
-                self.x_min = pos[0]
-            elif self.x_max < pos[0]:
-                self.x_max = pos[0]
-            if self.y_min > pos[1]:
-                self.y_min = pos[1]
-            elif self.y_max < pos[1]:
-                self.y_max = pos[1]
-            area = abs((self.x_max - self.x_min)) * abs((self.y_max - self.y_min))
-            if area > self.max_area:
-                return_value = area - self.max_area
-                self.max_area = area
-                return return_value*20.
-            else:
-                return -0.05
-        else:
-            return -10.
-
-    def _compute_reward_new(self, obs, action, finished, done):
-        # drive along right side
+    def _compute_reward_old2(self, obs, action, done, finished):
         if finished:
-            return 500.
+            self.reward_publisher.publish(100.)
+            return 100.
         if not done:
-            # for 300 laserscan
-            left_dist = obs[370:380].mean()
-            right_dist = obs[120:130].mean()
-            front_dist = obs[245:255].mean()
-            if left_dist < 0.6 or right_dist < 0.6 or front_dist < 0.6:
-                return -1.5
-            elif action == 1:
-                return 1.
+            pos_x, pos_y = self._get_pos_x_y()
+            d = self._get_distance((pos_x, pos_y), (self.target_p[0], self.target_p[1]))
+            p_x, p_y = abs(self.target_p[0] - pos_x), abs(self.target_p[1] - pos_y)
+            if d < self.last_d:
+                dt = self.last_d - d
+                self.last_d = d
+                self.reward_publisher.publish(dt*2)
+                return dt*2
             else:
-                return -0.01
+                self.reward_publisher.publish(-0.001)
+                return -0.001
         else:
-            return -200.
+            self.reward_publisher.publish(-100.)
+            return -100.

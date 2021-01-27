@@ -2,6 +2,8 @@ import time
 import math
 import numpy as np
 
+from scipy.stats import norm
+
 import rospy
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SetModelState
@@ -10,7 +12,7 @@ from openai_ros import robot_gazebo_env
 from sensor_msgs.msg import LaserScan, CompressedImage
 from nav_msgs.msg import Odometry
 from cv_bridge import CvBridge, CvBridgeError
-# from std_msgs.msg import Float64
+from std_msgs.msg import Float64, String
 # from sensor_msgs.msg import Image
 # from tf.transformations import quaternion_from_euler
 import matplotlib.pyplot as plt
@@ -60,7 +62,6 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.gazebo.unpauseSim()
         time.sleep(default_sleep)
 
-        # self.controllers_object.reset_controllers()
         self._check_all_sensors_ready()
 
         self._init_camera()
@@ -73,6 +74,22 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                                                        AckermannDriveStamped,
                                                        queue_size=20)
 
+        self.reward_publisher = rospy.Publisher("/env_reward",
+                                                Float64,
+                                                queue_size=20)
+
+        self.target_pos_publisher = rospy.Publisher("/pos_to_target",
+                                                    String,
+                                                    queue_size=20)
+
+        self.dyn1_publisher = rospy.Publisher("/gazebo/set_model_state",
+                                              ModelState,
+                                              queue_size=20)
+        self.dyn1_x_min = -2.0
+        self.dyn1_x_max = 1.2
+        self.dyn1_last = 0.0
+        self.dyn1_state = 0
+
         self._check_publishers_connection()
 
         self.gazebo.pauseSim()
@@ -80,39 +97,63 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.x_min, self.x_max, self.y_min, self.y_max = 0.0, 0.0, 0.0, 0.0
         self.max_area = 0.0
         self.obs_save_ind = 0
+        self.target_p = (5., 7.)
+        self.cumulated_steps = 0
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
-    def _get_ini_position(self, init, not_p=None):
-        if not_p is None:
-            p = np.random.randint(0, 1)
+    def _update_dyn1(self):
+        if self.dyn1_state == 0:
+            self.dyn1_last += 0.02
+            if self.dyn1_last > self.dyn1_x_max:
+                self.dyn1_state = 1
         else:
-            while True:
-                p = np.random.randint(0, 5)
-                if p != not_p:
-                    break
+            self.dyn1_last -= 0.02
+            if self.dyn1_last < self.dyn1_x_min:
+                self.dyn1_state = 0
+
+        ms = ModelState()
+        ms.model_name = 'unit_cylinder'
+        ms.reference_frame = 'world'
+        ms.pose.position.x = self.dyn1_last
+        self.dyn1_publisher.publish(ms)
+
+    def _get_ini_and_target_position(self):
+
+        env = np.random.randint(0, 2)
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if p == 0:
-            p_x = np.random.uniform(-0.5, 0.5)
-            p_y = np.random.uniform(0.0, 0.5)
-        elif p == 1:
-            p_x = np.random.uniform(-4.5, -4.2)
-            p_y = np.random.uniform(-30, -25)
-        elif p == 2:
-            p_x = np.random.uniform(4.5, 5.0)
-            p_y = np.random.uniform(-25, -24)
-        elif p == 3:
-            p_x = np.random.uniform(4.5, 5.0)
-            p_y = np.random.uniform(-20, -21)
-        elif p == 4:
-            p_x = np.random.uniform(2.0, 2.5)
-            p_y = np.random.uniform(8.0, 9.0)
-
-        if init:
-            return {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                    'o_y': o_y, 'o_z': o_z, 'o_w': o_w}, p
-        else:
-            return (p_x, p_y), p
+        if env == 0:
+            choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(0.5, 1.)
+                p_y = np.random.uniform(-4.5, -5.)
+                t_x = np.random.uniform(-2.5, -3.0)
+                t_y = np.random.uniform(2.5, 3.0)
+            else:
+                p_x = np.random.uniform(-2.5, -3.0)
+                p_y = np.random.uniform(2.5, 3.0)
+                t_x = np.random.uniform(0.5, 1.)
+                t_y = np.random.uniform(-4.5, -5.)
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                    'o_y': o_y, 'o_z': 1.5, 'o_w': 1.5}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+        elif env == 1:
+            choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(18.0, 18.5)
+                p_y = np.random.uniform(-4.5, -5.)
+                t_x = np.random.uniform(10., 10.5)
+                t_y = np.random.uniform(5.0, 5.5)
+            else:
+                p_x = np.random.uniform(10., 10.5)
+                p_y = np.random.uniform(5.0, 5.5)
+                t_x = np.random.uniform(18.0, 18.5)
+                t_y = np.random.uniform(-4.5, -5.)
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                    'o_y': o_y, 'o_z': 1.5, 'o_w': 1.5}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
 
     def reset_position(self):
         if not self.initial_position:
@@ -131,21 +172,15 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def reset(self):
         super(ScoutingEnv, self).reset()
-        self.steps_count = 0
-        # self.initial_position = {'p_x': 2, 'p_y': np.random.uniform(8, 9), 'p_z': 0.05, 'o_x': 0,
-        #                         'o_y': 0.0, 'o_z': np.random.uniform(-1.5, -2.0), 'o_w': -0.8}
-        self.initial_position, p = self._get_ini_position(init=True)
-        self.target_pos, p = self._get_ini_position(init=False)
-        self.x_min, self.x_max, self.y_min, self.y_max = self.initial_position['p_x'] - 0.01, self.initial_position[
-            'p_x'] + 0.01, self.initial_position['p_y'] - 0.01, self.initial_position['p_y'] + 0.01
-        self.max_area = 0.0
-        self.last_int_difference = self._get_distance(self.target_pos,
-                                                      (self.initial_position['p_x'], self.initial_position['p_y']))
+        self.cumulated_steps = 0
+        self.initial_position, self.target_p = self._get_ini_and_target_position()
+
         self.gazebo.unpauseSim()
         self.reset_position()
 
         time.sleep(default_sleep)
         self.gazebo.pauseSim()
+        self.cumulated_steps = 0
 
         return self._get_obs()
 
@@ -198,9 +233,8 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         # obs_high = np.append(np.ones(300) * 10., np.array((100., 100)))
         obs_low = 0.0
         obs_high = 10.0
-        #self.observation_space = spaces.Box(low=obs_low, high=obs_high, shape=self.input_shape)
-        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(40, 128, 1))
-        # self.observation_space = spaces.Discrete(low=obs_low, high=obs_high, shape=self.input_shape)
+        self.observation_space = spaces.Box(low=0.0, high=8.0, shape=(12,))
+        # self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(40, 128, 1))
 
         img_dims = img.shape[0] * img.shape[1] * img.shape[2]
         byte_size = 4
@@ -222,20 +256,6 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             except:
                 rospy.logerr("Current /scan not ready yet, retrying for getting laser_scan")
         return self.laser_scan
-
-    #     def _get_additional_laser_scan(self):
-    #         laser_scans = []
-    #         self.gazebo.unpauseSim()
-    #         while len(laser_scans) < 2  and not rospy.is_shutdown():
-    #             try:
-    #                 data = rospy.wait_for_message("/scan", LaserScan, timeout=1.0)
-    #                 laser_scans.append(data.ranges)
-    #             except Exception as e:
-    #                 rospy.logerr("getting laser data...")
-    #                 print(e)
-    #         self.gazebo.pauseSim()
-
-    #         return laser_scans
 
     def _laser_scan_callback(self, data):
         self.laser_scan = data
@@ -285,27 +305,84 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _get_obs(self):
-        scan = self._process_scan() / 10.
-        #self.scans = np.append(self.scans, scan.reshape(1, 128), axis=0)
-        #self.scans = np.delete(self.scans, 0, axis=0)
-        self.scans = np.insert(self.scans, 0, scan.reshape(1, 128), axis=0)
-        self.scans = np.delete(self.scans, -1, axis=0)
-        #plt.imsave('{}/img_logs/obs_{}.jpg'.format(Path.home(), self.obs_save_ind), self.scans)
-        #self.obs_save_ind += 1
-        return self.scans.reshape((40, 128, 1))
+        scan = self._process_scan2()
+        pos_x, pos_y = self._get_pos_x_y()
+        t_x, t_y = self.target_p[0], self.target_p[1]
+        p_x = abs(t_x - pos_x)
+        p_y = abs(t_y - pos_y)
+        obs = np.append(scan, np.array([p_x, p_y]).reshape((1, 2)))
+        self.target_pos_publisher.publish("x: {:.2f}, y: {:.2f}, steps: {}".format(p_x, p_y, self.cumulated_steps))
+        return np.clip(obs, a_min=0.0, a_max=7.99)
 
     def _get_obs_old(self):
         scan = self._process_scan()
-        # scan = self.get_laser_scan().astype('float32')
-        # scan = np.clip(scan, None, 10.0) / 10.0
-        # scan = scan.reshape((1000, ))
-        (x, y) = self._get_pos_x_y()
-        if self.initial_position:
-            x -= self.initial_position['p_x']
-            y -= self.initial_position['p_y']
-        # (ox, oy, oz, ow) = self._get_orientation()
-        return scan
-        # return np.append(scan, np.array((x, y)))
+        # self.scans = np.append(self.scans, scan.reshape(1, 128), axis=0)
+        # self.scans = np.delete(self.scans, 0, axis=0)
+        self.scans = np.insert(self.scans, 0, scan.reshape(1, 128), axis=0)
+        self.scans = np.delete(self.scans, -1, axis=0)
+
+        if np.random.rand() < 0.1:
+            plt.imsave('{}/img_logs/obs_{}.jpg'.format(Path.home(), self.obs_save_ind), self.scans)
+            self.obs_save_ind += 1
+        return self.scans.reshape((40, 128, 1))
+        state = self._create_robot_state2()
+
+        obs = np.zeros((48, 256))
+        obs[:, :208] = self.scans
+        obs[:, 208:] = state
+
+        return obs.reshape((48, 256, 1))
+
+    def _create_robot_state2(self):
+        pos_x, pos_y = self._get_pos_x_y()
+
+        pos_x_y = np.ones((1, 48))
+
+        s_x = abs(self.target_p[0] - pos_x)
+        s_y = abs(self.target_p[1] - pos_y)
+
+        x_all = np.arange(-1.2, 1.2, 0.1)  # entire range of x, both in and out of spec
+        # mean = 0, stddev = 1, since Z-transform was calculated
+        d_x = norm.pdf(x_all, 0, s_x / 2)
+        d_x = np.interp(d_x, (d_x.min(), d_x.max()), (0, 1))
+
+        d_y = norm.pdf(x_all, 0, s_y / 2)
+        d_y = np.interp(d_y, (d_y.min(), d_y.max()), (0, 1))
+
+        d_all = np.zeros((1, 48))
+        d_all[:, :24] = d_x
+        d_all[:, 24:] = d_y
+        self.distances = np.insert(self.distances, 0, d_all.reshape(1, 48), axis=0)
+        self.distances = np.delete(self.distances, -1, axis=0)
+
+        return self.distances.reshape(48, 48)
+
+    def _create_robot_state(self):
+        pos_x, pos_y = self._get_pos_x_y()
+
+        def twoD_Gaussian(x, y, amplitude, xo, yo, sigma_x, sigma_y, theta, offset):
+            xo = float(xo)
+            yo = float(yo)
+            a = (np.cos(theta) ** 2) / (2 * sigma_x ** 2) + (np.sin(theta) ** 2) / (2 * sigma_y ** 2)
+            b = -(np.sin(2 * theta)) / (4 * sigma_x ** 2) + (np.sin(2 * theta)) / (4 * sigma_y ** 2)
+            c = (np.sin(theta) ** 2) / (2 * sigma_x ** 2) + (np.cos(theta) ** 2) / (2 * sigma_y ** 2)
+            g = offset + amplitude * np.exp(- (a * ((x - xo) ** 2) + 2 * b * (x - xo) * (y - yo)
+                                               + c * ((y - yo) ** 2)))
+            return g.ravel()
+
+        x = np.linspace(0, 47, 48)
+        y = np.linspace(0, 47, 48)
+        x, y = np.meshgrid(x, y)
+
+        amplitude = 1
+        xo = 24
+        yo = 24
+        s_x = (self.target_p[0] - pos_x) * 3
+        s_y = (self.target_p[1] - pos_y) * 3
+
+        # create data
+        data = twoD_Gaussian(x, y, amplitude, xo, yo, s_x, s_y, 0, 0)
+        return data.reshape(48, 48)
 
     def get_odom(self):
         return self.odom
@@ -333,18 +410,33 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         return (px, py)
 
     def _process_scan(self):
-        ranges = self.get_laser_scan().astype('float32')
-        ranges = np.clip(ranges, 0.0, 10.0)
+        ranges = self.get_laser_scan().astype('float32') - 0.5
+        # ranges = ranges[250:-250]
+        ranges = np.clip(ranges, 0.0, 8.0) / 8.
         ranges_chunks = np.array_split(ranges, 128)
-        ranges_mean = np.array([np.mean(chunk) for chunk in ranges_chunks])
+        ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
         return ranges_mean.reshape(128, )
+
+    def _process_scan2(self):
+        ranges = self.get_laser_scan().astype('float32')
+        ranges = ranges[150:-150]
+        ranges = np.clip(ranges, 0.0, 8.0)
+        ranges_chunks = np.array_split(ranges, 10)
+        ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
+        return ranges_mean.reshape(1, 10)
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()
-        return self._episode_done
+        if self._episode_done or self.cumulated_steps > 600:
+            return True
+        else:
+            return False
 
     def _is_finished(self, obs):
-        if self.steps_count > 1200:
+        pos_x, pos_y = self._get_pos_x_y()
+        d = self._get_distance((pos_x, pos_y), (self.target_p[0], self.target_p[1]))
+        p_x, p_y = abs(self.target_p[0] - pos_x), abs(self.target_p[1] - pos_y)
+        if d < 0.6:
             return True
         else:
             return False
@@ -364,12 +456,6 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def steering(self, steering_angle, speed):
         command = self._create_steering_command(steering_angle, speed)
         self.drive_control_publisher.publish(command)
-
-    # def get_odom(self):
-    #     return self.odom
-
-    # def get_imu(self):
-    #     return self.imu
 
     def get_laser_scan(self):
         return np.array(self.laser_scan.ranges, dtype=np.float32)
