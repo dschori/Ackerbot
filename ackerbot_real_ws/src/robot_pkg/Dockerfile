@@ -75,3 +75,5 @@ RUN pip3 install adafruit-circuitpython-pca9685 && \
     pip3 install adafruit-circuitpython-servokit && \
     pip3 install Jetson.GPIO && \
     pip3 install simple-pid
+
+CMD source devel/setup.bash
