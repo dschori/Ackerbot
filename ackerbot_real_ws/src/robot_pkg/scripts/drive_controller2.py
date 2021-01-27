@@ -57,7 +57,7 @@ class Controller:
         # Convert the 0-1 range into a value in the right range.
         return rightMin + (valueScaled * rightSpan)
 
-    def controll(self):
+    def control(self):
         rospy.Subscriber("/camera_t265/odom/sample", Odometry, self.sensor_callback)
         rospy.Subscriber("/ackermann_cmd", AckermannDriveStamped, self.cmd_callback)
         current_time = time.time()
@@ -79,4 +79,4 @@ class Controller:
 
 if __name__ == '__main__':
     c = Controller()
-    c.controll()
+    c.control()

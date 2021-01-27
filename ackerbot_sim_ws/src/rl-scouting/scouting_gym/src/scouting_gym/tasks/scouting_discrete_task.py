@@ -74,7 +74,7 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
 
     def _set_action_distrecte(self, action):
         steering_angle = 0
-        self.speed = 1.2
+        self.speed = 1.0
         if action == 0:  # right
             steering_angle = -0.6
             self.speed = 0.6
@@ -145,7 +145,7 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
                 reward1 = -0.001
 
             ranges = self.get_laser_scan()
-            if np.min(ranges) < 0.5:
+            if np.min(ranges) < 0.8:
                 reward1 += -0.25 * (1 - np.min(ranges))
 
             self.reward_publisher.publish(reward1)

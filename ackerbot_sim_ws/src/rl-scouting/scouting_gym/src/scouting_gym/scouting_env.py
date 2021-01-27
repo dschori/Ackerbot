@@ -33,7 +33,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.initial_position = None
 
-        self.min_distance = .26
+        self.min_distance = .5
 
         self.last_int_difference = 0
         self.target_pos = (0.0, 2.0)
@@ -144,10 +144,10 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                 p_x = np.random.uniform(18.0, 18.5)
                 p_y = np.random.uniform(-4.5, -5.)
                 t_x = np.random.uniform(10., 10.5)
-                t_y = np.random.uniform(5.0, 5.5)
+                t_y = np.random.uniform(5.5, 6.0)
             else:
                 p_x = np.random.uniform(10., 10.5)
-                p_y = np.random.uniform(5.0, 5.5)
+                p_y = np.random.uniform(5.5, 6.0)
                 t_x = np.random.uniform(18.0, 18.5)
                 t_y = np.random.uniform(-4.5, -5.)
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
