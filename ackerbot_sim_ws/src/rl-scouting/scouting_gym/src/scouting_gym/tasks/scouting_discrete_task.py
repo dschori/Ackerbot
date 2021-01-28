@@ -30,7 +30,7 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         self.right_left = 0
         #self.action_space = spaces.Discrete(3)
         #self.action_space = spaces.Box(low=np.array([-0.6, 0.2]), high=np.array([0.6, 1.0]), shape=(2, ), dtype=np.float32)
-        self.action_space = spaces.Box(low=-0.6, high=0.6, shape=(1, ), dtype=np.float32)
+        self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(1, ), dtype=np.float32)
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
@@ -63,7 +63,7 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         self.cumulated_steps += 1
         self._update_dyn1()
         steering_angle = action[0]
-        self.speed = 1.
+        self.speed = 0.8
 
         self.last_action = action
         self.steering(steering_angle, self.speed)
@@ -145,8 +145,8 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
                 reward1 = -0.001
 
             ranges = self.get_laser_scan()
-            if np.min(ranges) < 0.8:
-                reward1 += -0.25 * (1 - np.min(ranges))
+            if np.min(ranges) < 1.0:
+                reward1 += -0.25 * (1. - np.min(ranges))
 
             self.reward_publisher.publish(reward1)
             return reward1
