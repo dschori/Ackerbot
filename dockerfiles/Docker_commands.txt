@@ -28,6 +28,8 @@ ros-noetic-realsense bash
 
 rosbag record -a -O data.bag -x "/camera_t265/fisheye1/(.*)|/camera_t265/fisheye2/(.*)" --split --size 1024
 
+rosbag record -a -O data.bag -x "/camera_t265/fisheye1/(.*)|/camera_t265/fisheye2/(.*)|/map(.*)|/scan_matched_points2|/trajectory_node_list|/move_base/(.*)" --split --size 1024
+
 rosrun map_server map_saver -f /home/dschori/MasterThesis/catkin_ws/src/robot_pkg/maps/indoor
 
 

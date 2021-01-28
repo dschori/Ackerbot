@@ -16,8 +16,6 @@ from gym import spaces
 from nav_msgs.msg import Odometry
 from tf2_msgs.msg import TFMessage
 import tf
-from openai_ros import robot_gazebo_env
-from scipy.stats import norm
 from sensor_msgs.msg import LaserScan, CompressedImage
 from std_msgs.msg import Float64, String
 
@@ -30,7 +28,7 @@ class ScoutingEnvInference(gym.Env):
         rospy.init_node('neuroracer_qlearn2', anonymous=True, log_level=rospy.INFO)
         self.initial_position = None
 
-        self.min_distance = .26
+        self.min_distance = .55
 
         self.last_int_difference = 0
         self.target_pos = (0.0, 2.0)
@@ -62,25 +60,27 @@ class ScoutingEnvInference(gym.Env):
         self.dyn1_x_max = 1.2
         self.dyn1_last = 0.0
         self.dyn1_state = 0
-        #self._check_publishers_connection()
+        # self._check_publishers_connection()
 
         self.cumulated_steps = 0
-        self.observation_space = spaces.Box(low=0.0, high=8.0, shape=(12,))
+        # self.observation_space = spaces.Box(low=0.0, high=8.0, shape=(12,))
+        self.observation_space = spaces.Tuple((
+            spaces.Box(low=0., high=4., shape=(18, )),
+            spaces.Box(low=-10., high=10., shape=(2,)),
+            spaces.Box(low=-1., high=1., shape=(2,)))
+        )
+        print(self.observation_space.sample())
         self.action_space = spaces.Box(low=-0.6, high=0.6, shape=(1, ), dtype=np.float32)
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
         self.number_of_sleeps = 10
-        self.target_p = (2., 0.)
+        self.target_p = (-3.3, -1.7)
         self.last_d = 10.
         self.steerings = []
-        while not rospy.is_shutdown():
-            try:
-                trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
-                self.offs_x, self.offs_y = trans[0], trans[1]
-                break
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                continue
+        self.offs_x, self.offs_y = 0., 0.
+        self.last_p_x = 0.
+        self.last_p_y = 0.
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
     def set_sleep_rate(self, hz):
@@ -105,7 +105,7 @@ class ScoutingEnvInference(gym.Env):
                 reward1 = -0.001
 
             ranges = self.get_laser_scan()
-            if np.min(ranges) < 0.5:
+            if np.min(ranges) < 0.8:
                 reward1 += -0.25 * (1 - np.min(ranges))
 
             self.reward_publisher.publish(reward1)
@@ -117,15 +117,15 @@ class ScoutingEnvInference(gym.Env):
     def step(self, action):
         self.cumulated_steps += 1
 
-        self.steerings.append(action[0])
+        self.steerings.append(action[0]/2.)
 
         steering_angle = np.mean(self.steerings)
-        self.speed = 0.15
+        self.speed = 0.3
 
         if len(self.steerings) > 5:
             _ = self.steerings.pop(0)
 
-        steering_angle = action[0]
+        steering_angle = action[0]/1.2
         self.last_action = action
         self.steering(steering_angle, self.speed)
         if self.rate:
@@ -147,6 +147,17 @@ class ScoutingEnvInference(gym.Env):
             self.rate.sleep()
             self.steering(0.0, 0.0)
 
+        while not rospy.is_shutdown():
+            try:
+                trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+                print(trans)
+                self.offs_x, self.offs_y = trans[0], trans[1]
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+
+        self.last_p_x = self.offs_x
+        self.last_p_y = self.offs_y
         return self._get_obs()
 
     def _check_all_systems_ready(self):
@@ -216,20 +227,18 @@ class ScoutingEnvInference(gym.Env):
         scan = self._process_scan()
         pos_x, pos_y = self._get_pos_x_y()
         t_x, t_y = self.target_p[0], self.target_p[1]
-        p_x = abs(t_x - pos_x)
-        p_y = abs(t_y - pos_y)
-        obs = np.append(scan, np.array([p_x, p_y]).reshape((1, 2)))
-        self.target_pos_publisher.publish("x: {:.2f}, y: {:.2f}, steps: {}".format(p_x, p_y, self.cumulated_steps))
-        return np.clip(obs, a_min=0.0, a_max=7.99)
+        p_x = t_x - pos_x
+        p_y = t_y - pos_y
 
-    def get_tfmessage(self):
-        trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
-        return trans
+        # obs = np.append(scan, np.array([p_x, p_y]).reshape((1, 2)))
 
-    def get_tfmessage_old(self):
-        while True:
-            if self.tfmessage.transforms[-1].child_frame_id == 'odom':
-                return self.tfmessage.transforms[-1]
+        scan = np.clip(scan.reshape((18, )), a_min=0.0, a_max=3.99)
+        pos_to_target = np.clip(np.array([p_x, p_y]).reshape((2, )), a_min=-9.99, a_max=9.99).astype(np.float32)
+        velocity = np.clip(np.array([self.last_p_x - p_x, self.last_p_y - p_y]).reshape((2, )), a_min=-.99, a_max=.99).astype(np.float32)
+        self.last_p_x = p_x
+        self.last_p_y = p_y
+        self.target_pos_publisher.publish("t: {}, v: {}, steps: {}".format(pos_to_target, velocity, self.cumulated_steps))
+        return (scan, pos_to_target, velocity)
 
     def _get_distance(self, a, b):
         return math.hypot(a[0] - b[0], a[1] - b[1])
@@ -240,17 +249,22 @@ class ScoutingEnvInference(gym.Env):
         #py = tfmessage.transform.translation.y
         trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
         px, py = trans[0], trans[1]
-        px -= self.offs_x
-        py -= self.offs_y
+        #px += self.offs_x
+        #py += self.offs_y
         return (px, py)
 
     def _process_scan(self):
         ranges = self.get_laser_scan().astype('float32')
-        ranges = ranges[150:-150]
-        ranges = np.clip(ranges, 0.0, 8.0)
-        ranges_chunks = np.array_split(ranges, 10)
+        #distances = ranges.copy()
+        #distances = np.clip(distances, 0.0, 4.0)
+        #thetas = np.linspace(-3.14, 3.14, 897)
+        #plt.figure()
+        #plt.polar(thetas, distances)
+        #plt.show()
+        ranges = np.clip(ranges, 0.0, 4.0)
+        ranges_chunks = np.array_split(ranges, 18)
         ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
-        return ranges_mean.reshape(1, 10)
+        return ranges_mean.reshape(1, 18)
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()
@@ -284,14 +298,6 @@ class ScoutingEnvInference(gym.Env):
 
     def get_laser_scan(self):
         return np.array(self.laser_scan.ranges, dtype=np.float32)
-
-    def get_camera_image(self):
-        try:
-            cv_image = self.bridge.compressed_imgmsg_to_cv2(self.camera_msg).astype('float32')
-        except Exception as e:
-            rospy.logerr("CvBridgeError: Error converting image")
-            rospy.logerr(e)
-        return cv_image
 
     def _is_collided(self):
         r = self.get_laser_scan()
