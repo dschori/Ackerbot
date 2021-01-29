@@ -70,7 +70,8 @@ class ScoutingEnvInference(gym.Env):
             spaces.Box(low=-1., high=1., shape=(2,)))
         )
         print(self.observation_space.sample())
-        self.action_space = spaces.Box(low=-0.6, high=0.6, shape=(1, ), dtype=np.float32)
+        # self.action_space = spaces.Box(low=-0.6, high=0.6, shape=(1, ), dtype=np.float32)
+        self.action_space = spaces.Discrete(3)
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
@@ -117,15 +118,16 @@ class ScoutingEnvInference(gym.Env):
     def step(self, action):
         self.cumulated_steps += 1
 
-        self.steerings.append(action[0]/2.)
+        self.speed = 0.2
 
-        steering_angle = np.mean(self.steerings)
-        self.speed = 0.3
+        steering_angle = 0.
+        if action == 0:
+            steering_angle = -0.6
+        elif action == 1:
+            steering_angle = 0.
+        elif action == 2:
+            steering_angle = 0.6
 
-        if len(self.steerings) > 5:
-            _ = self.steerings.pop(0)
-
-        steering_angle = action[0]/1.2
         self.last_action = action
         self.steering(steering_angle, self.speed)
         if self.rate:
@@ -261,6 +263,7 @@ class ScoutingEnvInference(gym.Env):
         #plt.figure()
         #plt.polar(thetas, distances)
         #plt.show()
+        ranges -= 0.3
         ranges = np.clip(ranges, 0.0, 4.0)
         ranges_chunks = np.array_split(ranges, 18)
         ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
