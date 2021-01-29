@@ -128,27 +128,24 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         return reward
 
     def _compute_reward(self, obs, action, done, finished):
+        reward1, reward2 = .0, .0
         if finished:
             self.reward_publisher.publish(100.)
             return 100.
         if not done:
-            reward1 = 0.
             pos_x, pos_y = self._get_pos_x_y()
+
             d = self._get_distance((pos_x, pos_y), (self.target_p[0], self.target_p[1]))
-            p_x, p_y = abs(self.target_p[0] - pos_x), abs(self.target_p[1] - pos_y)
-            if d < self.last_d:
-                dt = self.last_d - d
-                self.last_d = d
-                reward1 = dt*2
-            else:
-                reward1 = -0.0001
+
+            reward1 = 2.*(self.last_d - d)
+            self.last_d = d
 
             ranges = self.get_laser_scan()
             if np.min(ranges) < 1.0:
-                reward1 = -0.25 * (1. - np.min(ranges))
+                reward2 = -0.5 * (1. - np.min(ranges))
 
-            self.reward_publisher.publish(reward1)
-            return reward1
+            self.reward_publisher.publish(reward1 + reward2)
+            return reward1 + reward2
         else:
             self.reward_publisher.publish(-100.)
             return -100.

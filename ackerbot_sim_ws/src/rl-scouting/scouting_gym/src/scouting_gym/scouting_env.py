@@ -125,7 +125,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _get_ini_and_target_position(self):
 
-        env = np.random.randint(0, 2)
+        env = np.random.randint(0, 3)
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
         if env == 0:
@@ -143,11 +143,8 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                        'o_y': o_y, 'o_z': 1.5, 'o_w': 1.5}
             target_pos = (t_x, t_y)
-            p_x = np.random.uniform(0., .5)
-            p_y = np.random.uniform(20., 20.5)
-            t_x = np.random.uniform(10., 10.5)
-            t_y = np.random.uniform(20., 20.5)
             return ini_pos, target_pos
+
         elif env == 1:
             choice = np.random.randint(0, 2)
             if choice == 0:
@@ -165,10 +162,24 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                 t_x = np.random.uniform(18.0, 18.5)
                 t_y = np.random.uniform(-4.5, -5.)
 
-            p_x = np.random.uniform(0., .5)
-            p_y = np.random.uniform(20., 20.5)
-            t_x = np.random.uniform(10., 10.5)
-            t_y = np.random.uniform(20., 20.5)
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': 3.4, 'o_w': 1.5}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+
+        elif env == 2:
+            choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(0., .5)
+                p_y = np.random.uniform(20., 20.5)
+                t_x = np.random.uniform(10., 10.5)
+                t_y = np.random.uniform(20., 20.5)
+            else:
+                p_x = np.random.uniform(10., 10.5)
+                p_y = np.random.uniform(20., 20.5)
+                t_x = np.random.uniform(0., .5)
+                t_y = np.random.uniform(20., 20.5)
+
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                        'o_y': o_y, 'o_z': 3.4, 'o_w': 1.5}
             target_pos = (t_x, t_y)
