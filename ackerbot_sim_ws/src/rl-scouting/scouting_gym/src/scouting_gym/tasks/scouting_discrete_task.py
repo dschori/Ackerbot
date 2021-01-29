@@ -28,9 +28,9 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         rospy.init_node('neuroracer_qlearn2', anonymous=True, log_level=rospy.INFO)
         self.last_action = 1
         self.right_left = 0
-        #self.action_space = spaces.Discrete(3)
+        self.action_space = spaces.Discrete(3)
         #self.action_space = spaces.Box(low=np.array([-0.6, 0.2]), high=np.array([0.6, 1.0]), shape=(2, ), dtype=np.float32)
-        self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(1, ), dtype=np.float32)
+        #self.action_space = spaces.Box(low=-0.5, high=0.5, shape=(1, ), dtype=np.float32)
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
@@ -59,7 +59,7 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         middle_distance = np.clip(ranges[525:555], None, 10).mean()
         return rigth_distance, left_distance, middle_distance
 
-    def _set_action(self, action):
+    def _set_action_cont(self, action):
         self.cumulated_steps += 1
         self._update_dyn1()
         steering_angle = action[0]
@@ -72,18 +72,17 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
                 self.rate.sleep()
                 self.steering(steering_angle, self.speed)
 
-    def _set_action_distrecte(self, action):
+    def _set_action(self, action):
+        self.cumulated_steps += 1
+        self._update_dyn1()
         steering_angle = 0
-        self.speed = 1.0
+        self.speed = 0.6
         if action == 0:  # right
             steering_angle = -0.6
-            self.speed = 0.6
         elif action == 1:  # middle
             steering_angle = 0
-            self.speed = 1.0
         elif action == 2:  # left
             steering_angle = 0.6
-            self.speed = 0.6
 
         self.last_action = action
         self.steering(steering_angle, self.speed)
@@ -142,11 +141,11 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
                 self.last_d = d
                 reward1 = dt*2
             else:
-                reward1 = -0.001
+                reward1 = -0.0001
 
             ranges = self.get_laser_scan()
             if np.min(ranges) < 1.0:
-                reward1 += -0.25 * (1. - np.min(ranges))
+                reward1 = -0.25 * (1. - np.min(ranges))
 
             self.reward_publisher.publish(reward1)
             return reward1

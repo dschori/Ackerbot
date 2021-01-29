@@ -85,6 +85,10 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.dyn1_publisher = rospy.Publisher("/gazebo/set_model_state",
                                               ModelState,
                                               queue_size=20)
+
+        self.scan_publisher = rospy.Publisher("/obs_image",
+                                              CompressedImage,
+                                              queue_size=20)
         self.dyn1_x_min = -2.0
         self.dyn1_x_max = 1.2
         self.dyn1_last = 0.0
@@ -127,18 +131,22 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         if env == 0:
             choice = np.random.randint(0, 2)
             if choice == 0:
-                p_x = np.random.uniform(0., 0.5)
-                p_y = np.random.uniform(-4.5, -5.)
+                p_x = np.random.uniform(-0.5, -1.0)
+                p_y = np.random.uniform(-4.3, -4.5)
                 t_x = np.random.uniform(-2.5, -3.0)
                 t_y = np.random.uniform(2.5, 3.0)
             else:
                 p_x = np.random.uniform(-2.5, -3.0)
                 p_y = np.random.uniform(2.5, 3.0)
-                t_x = np.random.uniform(0., 0.5)
-                t_y = np.random.uniform(-4.5, -5.)
+                t_x = np.random.uniform(-0.5, -1.0)
+                t_y = np.random.uniform(-4.3, -4.5)
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                        'o_y': o_y, 'o_z': 1.5, 'o_w': 1.5}
             target_pos = (t_x, t_y)
+            p_x = np.random.uniform(0., .5)
+            p_y = np.random.uniform(20., 20.5)
+            t_x = np.random.uniform(10., 10.5)
+            t_y = np.random.uniform(20., 20.5)
             return ini_pos, target_pos
         elif env == 1:
             choice = np.random.randint(0, 2)
@@ -156,6 +164,11 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                 p_y = np.random.uniform(1.5, 2.5)
                 t_x = np.random.uniform(18.0, 18.5)
                 t_y = np.random.uniform(-4.5, -5.)
+
+            p_x = np.random.uniform(0., .5)
+            p_y = np.random.uniform(20., 20.5)
+            t_x = np.random.uniform(10., 10.5)
+            t_y = np.random.uniform(20., 20.5)
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                        'o_y': o_y, 'o_z': 3.4, 'o_w': 1.5}
             target_pos = (t_x, t_y)
@@ -460,7 +473,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()
-        if self._episode_done or self.cumulated_steps > 600:
+        if self._episode_done or self.cumulated_steps > 700:
             return True
         else:
             return False
