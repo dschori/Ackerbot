@@ -17,13 +17,13 @@ from std_msgs.msg import Float64, String
 # from tf.transformations import quaternion_from_euler
 import matplotlib.pyplot as plt
 from pathlib import Path
-
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from ackermann_msgs.msg import AckermannDriveStamped
 
 from gym import spaces
 from gym.envs.registration import register
 
-# import cv2
+import cv2
 
 default_sleep = 1
 
@@ -130,6 +130,72 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
         if env == 0:
             choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(-6.75, -7.0)
+                p_y = np.random.uniform(-2.0, -1.0)
+                t_x = np.random.uniform(-1.75, -1.25)
+                t_y = np.random.uniform(-3.75, -4.25)
+                o_w = -1.5
+            else:
+                p_x = np.random.uniform(-1.75, -1.25)
+                p_y = np.random.uniform(-3.75, -4.25)
+                t_x = np.random.uniform(-6.75, -7.0)
+                t_y = np.random.uniform(-2.0, -1.0)
+                o_w = 1.5
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': 1.5, 'o_w': o_w}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+
+        elif env == 1:
+            choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(1.25, 1.75)
+                p_y = np.random.uniform(-0.5, -1.0)
+                t_x = np.random.uniform(7.0, 7.5)
+                t_y = np.random.uniform(-4.25, -4.75)
+                o_w = -1.5
+            else:
+                p_x = np.random.uniform(7.0, 7.5)
+                p_y = np.random.uniform(-4.25, -4.75)
+                t_x = np.random.uniform(1.25, 1.75)
+                t_y = np.random.uniform(-0.5, -1.0)
+                o_w = 1.5
+
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': 1.5, 'o_w': o_w}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+
+        elif env == 2:
+            choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(-6.0, -7.0)
+                p_y = np.random.uniform(-7.0, -8.0)
+                t_x = np.random.uniform(6.5, 7.0)
+                t_y = np.random.uniform(-9.75, -10.25)
+                o_w = -1.
+            else:
+                p_x = np.random.uniform(6.5, 7.0)
+                p_y = np.random.uniform(-9.75, -10.25)
+                t_x = np.random.uniform(-6.0, -7.0)
+                t_y = np.random.uniform(-7.0, -8.0)
+                o_w = 1.
+
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': 3., 'o_w': o_w}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+
+    def _get_ini_and_target_position_old(self):
+
+        env = np.random.randint(0, 3)
+        p_x, p_y, p_z = 0.0, 0.0, 0.05
+        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
+        env = 0
+        if env == 0:
+            choice = np.random.randint(0, 2)
+            choice = 0
             if choice == 0:
                 p_x = np.random.uniform(-0.5, -1.0)
                 p_y = np.random.uniform(-4.3, -4.5)
@@ -272,12 +338,12 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         obs_low = 0.0
         obs_high = 10.0
         # self.observation_space = spaces.Box(low=0.0, high=10.0, shape=(20,))
-        self.observation_space = spaces.Tuple([
-            spaces.Box(low=0., high=4., shape=(18, )),
-            spaces.Box(low=-10., high=10., shape=(2,)),
-            spaces.Box(low=-1., high=1., shape=(2,))
-        ])
+        # self.observation_space = spaces.Tuple([
+        #     spaces.Box(low=0., high=4., shape=(18, )),
+        #     spaces.Box(low=-20., high=20., shape=(2,))
+        # ])
         # self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(40, 128, 1))
+        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(64, 64, 3))
 
         img_dims = img.shape[0] * img.shape[1] * img.shape[2]
         byte_size = 4
@@ -348,6 +414,50 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         raise NotImplementedError()
 
     def _get_obs(self):
+        time_now = time.time()
+        scan_image = self.laserscan_to_image(self.laser_scan)
+        image = cv2.circle(scan_image, (32, 32), radius=2, color=(255, 0, 0), thickness=2)
+        pos_x, pos_y = self._get_pos_x_y()
+        t_x, t_y = self.target_p[0], self.target_p[1]
+        p_x = abs(t_x - pos_x)
+        p_y = abs(t_y - pos_y)
+        angle_to_target = np.arctan2(p_x, p_y)
+        distance_to_target = self._get_distance((pos_x, pos_y), (t_x, t_y))
+        yaw = self._get_angle_z()
+
+        def pol2cart(rho, phi):
+            x = rho * np.cos(phi)
+            y = rho * np.sin(phi)
+            return (x, y)
+
+        def target_to_pixels(target_x, target_y):
+
+            target_x = max(min(target_x, 3.), -3.)
+            target_y = max(min(target_y, 3.), -3.)
+            pix_x = int((32. / 3.) * target_x)
+            pix_y = int((32. / 3.) * target_y)
+            return pix_x + 32, pix_y + 32
+
+        def new(dist, phi):
+            (x, y) = pol2cart(dist / 2., phi)
+            x, y = target_to_pixels(x, y)
+            return x, y
+
+        offs = .0
+        if yaw > 0.:
+            offs = np.pi
+        pix_x, pix_y = new(dist=distance_to_target, phi=yaw-angle_to_target+offs)
+        # pix_x, pix_y = target_to_pixels(target_x=obs[1][0], target_y=obs[1][1], angle=obs[1][2])
+        image = cv2.circle(image, (pix_x, pix_y), radius=2, color=(0, 255, 0), thickness=2)
+        image = image.astype(np.float32)
+        image /= 255.
+        if np.random.rand() < 0.2:
+            plt.imsave('{}/img_logs/obs_{}.jpg'.format(Path.home(), self.obs_save_ind), image)
+            self.obs_save_ind += 1
+        return image
+        #return image, (p_x, p_y, yaw, angle_to_target, distance_to_target)
+
+    def _get_obs2(self):
         scan = self._process_scan2()
         pos_x, pos_y = self._get_pos_x_y()
         t_x, t_y = self.target_p[0], self.target_p[1]
@@ -357,12 +467,12 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
         # return (self._proc_scans(), np.clip(np.array((p_x, p_y)), 0., 9.99))
         scan = np.clip(scan.reshape((18, )), a_min=0.0, a_max=3.99)
-        pos_to_target = np.clip(np.array([p_x, p_y]).reshape((2, )), a_min=-9.99, a_max=9.99)
+        pos_to_target = np.clip(np.array([p_x, p_y]).reshape((2, )), a_min=-19.99, a_max=19.99)
         velocity = np.clip(np.array([self.last_p_x - p_x, self.last_p_y - p_y]).reshape((2, )), a_min=-1.0, a_max=1.0)
         self.last_p_x = p_x
         self.last_p_y = p_y
         self.target_pos_publisher.publish("t: {}, v: {}, steps: {}".format(pos_to_target, velocity, self.cumulated_steps))
-        return (scan, pos_to_target, velocity)
+        return (scan, pos_to_target)
 
     def _proc_scans(self):
         scan = self._process_scan()
@@ -459,10 +569,41 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def _get_distance(self, a, b):
         return math.hypot(a[0] - b[0], a[1] - b[1])
 
+    def _quaternion_to_euler_angle_vectorized1(self, w, x, y, z):
+        ysqr = y * y
+
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + ysqr)
+        X = np.arctan2(t0, t1)
+
+        t2 = +2.0 * (w * y - z * x)
+        t2 = np.where(t2 > +1.0, +1.0, t2)
+        # t2 = +1.0 if t2 > +1.0 else t2
+
+        t2 = np.where(t2 < -1.0, -1.0, t2)
+        # t2 = -1.0 if t2 < -1.0 else t2
+        Y = np.arcsin(t2)
+
+        t3 = +2.0 * (w * z + x * y)
+        t4 = +1.0 - 2.0 * (ysqr + z * z)
+        Z = np.arctan2(t3, t4)
+
+        return X, Y, Z
+
+    def _get_angle_z(self):
+        odom = self.get_odom()
+        orientation_list = [odom.pose.pose.orientation.x,
+                            odom.pose.pose.orientation.y,
+                            odom.pose.pose.orientation.z,
+                            odom.pose.pose.orientation.w]
+        (roll, pitch, yaw) = euler_from_quaternion(orientation_list)
+        return yaw
+
     def _get_pos_x_y(self):
         odom = self.get_odom()
         px = odom.pose.pose.position.x
         py = odom.pose.pose.position.y
+
         return (px, py)
 
     def _process_scan(self):
@@ -547,3 +688,61 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             crashed = np.any(mean_distance <= self.min_distance)
 
         return crashed
+
+    def laserscan_to_image(self, scan):
+        # Discretization Size
+        disc_size = .2
+        # Discretization Factor
+        disc_factor = 1 / disc_size
+        # Max Lidar Range
+        max_lidar_range = 6.
+        # Create Image Size Using Range and Discretization Factor
+        image_size = int(max_lidar_range * 2 * disc_factor)
+
+        # Store maxAngle of lidar
+        maxAngle = scan.angle_max
+        # Store minAngle of lidar
+        minAngle = scan.angle_min
+        # Store angleInc of lidar
+        angleInc = scan.angle_increment
+        # Store maxLength in lidar distances
+        maxLength = scan.range_max
+        # Store array of ranges
+        ranges = scan.ranges
+        ranges = np.clip(ranges, 0.0, max_lidar_range)
+        # Calculate the number of points in array of ranges
+        num_pts = len(ranges)
+        # Create Array for extracting X,Y points of each data point
+        xy_scan = np.zeros((num_pts, 2))
+        # Create 3 Channel Blank Image
+        blank_image = np.zeros((image_size, image_size, 3), dtype=np.uint8)
+        # Loop through all points converting distance and angle to X,Y point
+        for i in range(num_pts):
+            # Check that distance is not longer than it should be
+            if (ranges[i] > max_lidar_range) or (math.isnan(ranges[i])):
+                pass
+            else:
+                # Calculate angle of point and calculate X,Y position
+                angle = minAngle + float(i) * angleInc
+                xy_scan[i][0] = float(ranges[i] * math.cos(angle))
+                xy_scan[i][1] = float(ranges[i] * math.sin(angle))
+
+        # Loop through all points plot in blank_image
+        for i in range(num_pts):
+            pt_x = xy_scan[i, 0]
+            pt_y = xy_scan[i, 1]
+            if (pt_x < max_lidar_range) or (pt_x > -1 * (max_lidar_range - disc_size)) or (pt_y < max_lidar_range) or (
+                    pt_y > -1 * (max_lidar_range - disc_size)):
+                pix_x = int(math.floor((pt_x + max_lidar_range) * disc_factor))
+                pix_y = int(math.floor((max_lidar_range - pt_y) * disc_factor))
+                if (pix_x > image_size) or (pix_y > image_size):
+                    print("Error")
+                else:
+                    blank_image[pix_y, pix_x] = [0, 0, 255]
+
+        blank_image = cv2.rotate(blank_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE)
+        blank_image = cv2.resize(blank_image, (64, 64), interpolation=cv2.INTER_AREA)
+        # Convert CV2 Image to ROS Message
+        img = self.bridge.cv2_to_imgmsg(blank_image, encoding="bgr8")
+        # Publish image
+        return blank_image

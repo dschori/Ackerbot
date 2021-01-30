@@ -74,7 +74,7 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
 
     def _set_action(self, action):
         self.cumulated_steps += 1
-        self._update_dyn1()
+        #self._update_dyn1()
         steering_angle = 0
         self.speed = 0.6
         if action == 0:  # right
