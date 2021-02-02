@@ -30,6 +30,7 @@ default_sleep = 1
 
 class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def __init__(self):
+        self.img_size = 84
 
         self.initial_position = None
 
@@ -105,6 +106,8 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.cumulated_steps = 0
         self.last_p_x = 0.
         self.last_p_y = 0.
+        self.obs_images = np.zeros((84, 84, 4))
+        self.max_lidar_range = 5.
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
     def _update_dyn1(self):
@@ -123,7 +126,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         ms.pose.position.x = self.dyn1_last
         self.dyn1_publisher.publish(ms)
 
-    def _get_ini_and_target_position(self):
+    def _get_ini_and_target_position_new(self):
 
         env = np.random.randint(0, 3)
         p_x, p_y, p_z = 0.0, 0.0, 0.05
@@ -187,15 +190,13 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             target_pos = (t_x, t_y)
             return ini_pos, target_pos
 
-    def _get_ini_and_target_position_old(self):
+    def _get_ini_and_target_position(self):
 
-        env = np.random.randint(0, 3)
+        env = np.random.randint(0, 2)
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        env = 0
         if env == 0:
             choice = np.random.randint(0, 2)
-            choice = 0
             if choice == 0:
                 p_x = np.random.uniform(-0.5, -1.0)
                 p_y = np.random.uniform(-4.3, -4.5)
@@ -218,13 +219,13 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                 p_y = np.random.uniform(-4.5, -5.)
                 # t_x = np.random.uniform(10., 10.5)
                 # t_y = np.random.uniform(5.5, 6.0)
-                t_x = np.random.uniform(10., 10.5)
-                t_y = np.random.uniform(1.5, 2.0)
+                t_x = np.random.uniform(12., 12.5)
+                t_y = np.random.uniform(2.5, 3.0)
             else:
                 # p_x = np.random.uniform(10., 10.5)
                 # p_y = np.random.uniform(5.5, 6.0)
-                p_x = np.random.uniform(10., 10.5)
-                p_y = np.random.uniform(1.5, 2.5)
+                p_x = np.random.uniform(12., 12.5)
+                p_y = np.random.uniform(2.5, 3.5)
                 t_x = np.random.uniform(18.0, 18.5)
                 t_y = np.random.uniform(-4.5, -5.)
 
@@ -268,6 +269,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def reset(self):
         super(ScoutingEnv, self).reset()
+        self.obs_images = np.zeros((84, 84, 4))
         self.cumulated_steps = 0
         self.initial_position, self.target_p = self._get_ini_and_target_position()
         self.last_p_x = self.initial_position['p_x']
@@ -343,7 +345,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         #     spaces.Box(low=-20., high=20., shape=(2,))
         # ])
         # self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(40, 128, 1))
-        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(64, 64, 3))
+        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.img_size, self.img_size, 4))
 
         img_dims = img.shape[0] * img.shape[1] * img.shape[2]
         byte_size = 4
@@ -415,8 +417,10 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _get_obs(self):
         time_now = time.time()
-        scan_image = self.laserscan_to_image(self.laser_scan)
-        image = cv2.circle(scan_image, (32, 32), radius=2, color=(255, 0, 0), thickness=2)
+        image = self.laserscan_to_image(self.laser_scan)
+        robot = np.zeros((self.img_size, self.img_size, 3), dtype=np.uint8)
+        robot = cv2.circle(robot, (self.img_size//2, self.img_size//2), radius=2, color=(255, 0, 0), thickness=2)
+        image += robot
         pos_x, pos_y = self._get_pos_x_y()
         t_x, t_y = self.target_p[0], self.target_p[1]
         p_x = abs(t_x - pos_x)
@@ -430,31 +434,54 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             y = rho * np.sin(phi)
             return (x, y)
 
-        def target_to_pixels(target_x, target_y):
+        def target_to_pixels(target_x, target_y, lidar_range):
 
-            target_x = max(min(target_x, 3.), -3.)
-            target_y = max(min(target_y, 3.), -3.)
-            pix_x = int((32. / 3.) * target_x)
-            pix_y = int((32. / 3.) * target_y)
-            return pix_x + 32, pix_y + 32
+            target_x = max(min(target_x, lidar_range/2.), -lidar_range/2.)
+            target_y = max(min(target_y, lidar_range/2.), -lidar_range/2.)
+            pix_x = int(((self.img_size//2-4) / (lidar_range/2.)) * target_x)
+            pix_y = int(((self.img_size//2-4) / (lidar_range/2.)) * target_y)
+            return pix_x + self.img_size//2, pix_y + self.img_size//2
 
-        def new(dist, phi):
+        def new(dist, phi, lidar_range):
             (x, y) = pol2cart(dist / 2., phi)
-            x, y = target_to_pixels(x, y)
+            x, y = target_to_pixels(x, y, lidar_range)
             return x, y
 
-        offs = .0
-        if yaw > 0.:
+        offs = np.pi
+        if False:
             offs = np.pi
-        pix_x, pix_y = new(dist=distance_to_target, phi=yaw-angle_to_target+offs)
-        # pix_x, pix_y = target_to_pixels(target_x=obs[1][0], target_y=obs[1][1], angle=obs[1][2])
-        image = cv2.circle(image, (pix_x, pix_y), radius=2, color=(0, 255, 0), thickness=2)
+            dx = t_x - pos_x
+            dy = t_y - pos_y
+            #print(dx, dy, yaw)
+            if dx > 0. and dy < 0.:
+                offs = 0.
+            if dx > 0. and dy > 0.:
+                offs = 0.
+        if True:
+            offs = 0.
+            dx = pos_x-t_x
+            dy = pos_y-t_y
+            angle_to_target = np.arctan2(dx, dy)
+            #print(dx, dy, yaw)
+        #print(yaw, angle_to_target, offs)
+        pix_x, pix_y = new(dist=distance_to_target, phi=yaw+angle_to_target+offs, lidar_range=self.max_lidar_range)
+        #pix_x, pix_y = new(dist=distance_to_target, phi=yaw-angle_to_target+offs, pos_x=pos_x)
+        image = cv2.circle(image, (pix_x, pix_y), radius=2, color=(0, 255, 0), thickness=3)
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         image = image.astype(np.float32)
         image /= 255.
-        if np.random.rand() < 0.2:
-            plt.imsave('{}/img_logs/obs_{}.jpg'.format(Path.home(), self.obs_save_ind), image)
+
+        if np.random.rand() < 0.5:
+            plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind), image)
             self.obs_save_ind += 1
-        return image
+        #print(time.time()-time_now)
+        self.obs_images = np.append(self.obs_images, image.reshape((84, 84, 1)), axis=2)
+        self.obs_images = np.delete(self.obs_images, 0, axis=2)
+
+        #self.obs_images = np.insert(self.obs_images, 0, image.reshape((84, 84, 1)), axis=2)
+        #self.obs_images = np.delete(self.obs_images, 3, axis=2)
+
+        return np.flip(self.obs_images, axis=2)
         #return image, (p_x, p_y, yaw, angle_to_target, distance_to_target)
 
     def _get_obs2(self):
@@ -695,7 +722,67 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         # Discretization Factor
         disc_factor = 1 / disc_size
         # Max Lidar Range
-        max_lidar_range = 6.
+        max_lidar_range = self.max_lidar_range
+        # Create Image Size Using Range and Discretization Factor
+        image_size = int(max_lidar_range * 2 * disc_factor)
+
+        # Store maxAngle of lidar
+        maxAngle = scan.angle_max
+        # Store minAngle of lidar
+        minAngle = scan.angle_min
+        # Store angleInc of lidar
+        angleInc = scan.angle_increment
+        # Store maxLength in lidar distances
+        maxLength = scan.range_max
+        # Store array of ranges
+        ranges = scan.ranges
+        ranges = np.clip(ranges, 0.0, max_lidar_range)
+        # Calculate the number of points in array of ranges
+        num_pts = len(ranges)
+        # Create Array for extracting X,Y points of each data point
+        xy_scan = np.zeros((num_pts, 2))
+        # Create 3 Channel Blank Image
+        blank_image = np.zeros((image_size, image_size, 3), dtype=np.uint8)
+        blank_image[:, :, 2] = 255
+        # Loop through all points converting distance and angle to X,Y point
+        for i in range(num_pts):
+            # Check that distance is not longer than it should be
+            if (ranges[i] > max_lidar_range) or (math.isnan(ranges[i])):
+                pass
+            else:
+                # Calculate angle of point and calculate X,Y position
+                angle = minAngle + float(i) * angleInc
+                xy_scan[i][0] = float(ranges[i] * math.cos(angle))
+                xy_scan[i][1] = float(ranges[i] * math.sin(angle))
+                b_i = 0.0
+                while True:
+                    pt_x = float(b_i * math.cos(angle))
+                    pt_y = float(b_i * math.sin(angle))
+                    pix_x = int(math.floor((pt_x + max_lidar_range) * disc_factor))
+                    pix_y = int(math.floor((max_lidar_range - pt_y) * disc_factor))
+                    if b_i >= ranges[i]:
+                        break
+                    try:
+                        blank_image[pix_y, pix_x] = [0, 0, 0]
+                    except IndexError:
+                        break
+                    b_i+=0.2
+
+        blank_image = cv2.rotate(blank_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE)
+        blank_image = cv2.resize(blank_image, (84, 84), interpolation=cv2.INTER_AREA)
+        # Convert CV2 Image to ROS Message
+        img = self.bridge.cv2_to_imgmsg(blank_image, encoding="bgr8")
+        # Publish image
+        return blank_image
+
+
+    def laserscan_to_image_old(self, scan):
+        # Discretization Size
+        disc_size = .3
+        # Discretization Factor
+        disc_factor = 1 / disc_size
+        # Max Lidar Range
+        max_lidar_range = 8.
         # Create Image Size Using Range and Discretization Factor
         image_size = int(max_lidar_range * 2 * disc_factor)
 
@@ -726,6 +813,20 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                 angle = minAngle + float(i) * angleInc
                 xy_scan[i][0] = float(ranges[i] * math.cos(angle))
                 xy_scan[i][1] = float(ranges[i] * math.sin(angle))
+                b_i = 0.0
+                while True:
+                    pt_x = float((ranges[i]+b_i) * math.cos(angle))
+                    pt_y = float((ranges[i]+b_i) * math.sin(angle))
+                    pix_x = int(math.floor((pt_x + max_lidar_range) * disc_factor))
+                    pix_y = int(math.floor((max_lidar_range - pt_y) * disc_factor))
+                    #print(pix_x, pix_y)
+                    if ranges[i] + b_i > max_lidar_range:
+                        break
+                    try:
+                        blank_image[pix_y, pix_x] = [0, 0, 255]
+                    except IndexError:
+                        break
+                    b_i+=0.2
 
         # Loop through all points plot in blank_image
         for i in range(num_pts):
@@ -741,7 +842,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                     blank_image[pix_y, pix_x] = [0, 0, 255]
 
         blank_image = cv2.rotate(blank_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE)
-        blank_image = cv2.resize(blank_image, (64, 64), interpolation=cv2.INTER_AREA)
+        blank_image = cv2.resize(blank_image, (84, 84), interpolation=cv2.INTER_AREA)
         # Convert CV2 Image to ROS Message
         img = self.bridge.cv2_to_imgmsg(blank_image, encoding="bgr8")
         # Publish image
