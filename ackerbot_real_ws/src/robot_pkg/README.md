@@ -7,6 +7,11 @@
 4. sudo docker build -t dschori/ackerbot:real -f Dockerfile .
 ```
 
+zuerst rocore auf laptop
+dann diese im docker:
+export ROS_MASTER_URI="http://192.168.178.50:11311"
+
+
 ## Starting the docker container:
 
 ### Only the first time:
