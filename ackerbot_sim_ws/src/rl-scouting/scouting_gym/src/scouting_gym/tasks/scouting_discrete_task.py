@@ -54,19 +54,6 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         middle_distance = np.clip(ranges[525:555], None, 10).mean()
         return rigth_distance, left_distance, middle_distance
 
-    def _set_action_cont(self, action):
-        self.cumulated_steps += 1
-        self._update_dyn1()
-        steering_angle = action[0]
-        self.speed = 0.8
-
-        self.last_action = action
-        self.steering(steering_angle, self.speed)
-        if self.rate:
-            for i in range(int(self.number_of_sleeps)):
-                self.rate.sleep()
-                self.steering(steering_angle, self.speed)
-
     def _set_action(self, action):
         self.cumulated_steps += 1
         #self._update_dyn1()

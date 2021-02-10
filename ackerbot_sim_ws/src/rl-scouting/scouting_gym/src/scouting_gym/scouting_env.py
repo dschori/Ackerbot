@@ -84,10 +84,11 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.scan_publisher = rospy.Publisher("/obs_image",
                                               CompressedImage,
                                               queue_size=20)
-        self.dyn1_x_min = -2.0
-        self.dyn1_x_max = 1.2
-        self.dyn1_last = 0.0
+        self.dyn1_x_min = -6.0
+        self.dyn1_x_max = -2.0
+        self.dyn1_last = self.dyn1_x_max
         self.dyn1_state = 0
+
 
         self._check_publishers_connection()
 
@@ -107,18 +108,19 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _update_dyn1(self):
         if self.dyn1_state == 0:
-            self.dyn1_last += 0.01
+            self.dyn1_last += 0.005
             if self.dyn1_last > self.dyn1_x_max:
                 self.dyn1_state = 1
         else:
-            self.dyn1_last -= 0.01
+            self.dyn1_last -= 0.005
             if self.dyn1_last < self.dyn1_x_min:
                 self.dyn1_state = 0
 
         ms = ModelState()
-        ms.model_name = 'unit_cylinder'
+        ms.model_name = 'unit_box_1'
         ms.reference_frame = 'world'
-        ms.pose.position.x = self.dyn1_last
+        ms.pose.position.x = 1.5
+        ms.pose.position.y = self.dyn1_last
         self.dyn1_publisher.publish(ms)
 
     def _get_ini_and_target_position_env1(self):
@@ -232,42 +234,49 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def _get_ini_and_target_position_env3(self):
 
         env = np.random.randint(0, 3)
-        env = 0
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
         if env == 0:
             choice = np.random.randint(0, 2)
             if choice == 0:
-                p_x = np.random.uniform(-0.5, 0.5)
-                p_y = np.random.uniform(-0.5, 0.5)
-                t_x = np.random.uniform(-4.25, -3.75)
-                t_y = np.random.uniform(-5.25, -4.75)
-                o_w = 4.0
+                p_x = np.random.uniform(-0.5, 5.5)
+                p_y = np.random.uniform(-0.5, 2.)
+                if np.random.randint(0, 2) == 1:
+                    t_x = np.random.uniform(-4.25, -3.75)
+                    t_y = np.random.uniform(-5.25, -4.75)
+                else:
+                    t_x = np.random.uniform(0., 4.)
+                    t_y = np.random.uniform(-5.25, -4.)
+                o_w = np.random.uniform(3.8, 4.2)
             else:
-                p_x = np.random.uniform(-4.25, -3.75)
-                p_y = np.random.uniform(-5.25, -4.75)
-                t_x = np.random.uniform(-0.5, 0.5)
-                t_y = np.random.uniform(-0.5, 0.5)
-                o_w = 1.5
+                if np.random.randint(0, 2) == 1:
+                    p_x = np.random.uniform(-4.25, -3.75)
+                    p_y = np.random.uniform(-5.25, -4.75)
+                else:
+                    p_x = np.random.uniform(0., 4.)
+                    p_y = np.random.uniform(-5.25, -4.)
+                t_x = np.random.uniform(-0.5, 5.5)
+                t_y = np.random.uniform(-0.5, 2.)
+                o_w = np.random.uniform(1.3, 1.7)
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': 1.5, 'o_w': o_w}
+                       'o_y': o_y, 'o_z': np.random.uniform(1.3, 1.7), 'o_w': o_w}
             target_pos = (t_x, t_y)
             return ini_pos, target_pos
 
         elif env == 1:
             choice = np.random.randint(0, 2)
             if choice == 0:
-                p_x = np.random.uniform(12.0, 12.5)
+                p_x = np.random.uniform(12., 16.5)
                 p_y = np.random.uniform(1.75, 2.25)
-                t_x = np.random.uniform(16., 16.5)
+                t_x = np.random.uniform(12., 16.5)
                 t_y = np.random.uniform(-5.75, -6.25)
-                o_z, o_w = 1.5, -1.5
+                o_z, o_w = np.random.uniform(1.3, 1.7), np.random.uniform(-1.3, -1.7)
             else:
-                p_x = np.random.uniform(16., 16.5)
+                p_x = np.random.uniform(12., 16.5)
                 p_y = np.random.uniform(-5.75, -6.25)
-                t_x = np.random.uniform(12.0, 12.5)
+                t_x = np.random.uniform(12.0, 16.5)
                 t_y = np.random.uniform(.75, 2.25)
-                o_z, o_w = 3.4, 1.5
+                o_z, o_w = np.random.uniform(3.2, 3.6), np.random.uniform(1.3, 1.7)
 
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                        'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
@@ -277,17 +286,17 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         elif env == 2:
             choice = np.random.randint(0, 2)
             if choice == 0:
-                p_x = np.random.uniform(1., 1.5)
-                p_y = np.random.uniform(7., 9.)
-                t_x = np.random.uniform(18., 19.)
-                t_y = np.random.uniform(7., 9.)
-                o_z, o_w = 1.5, 4.0
+                p_x = np.random.uniform(0., 7.)
+                p_y = np.random.uniform(5., 11.)
+                t_x = np.random.uniform(10., 19.)
+                t_y = np.random.uniform(5., 11.)
+                o_z, o_w = np.random.uniform(1.3, 1.7), np.random.uniform(3.8, 4.2)
             else:
-                p_x = np.random.uniform(18., 19.)
-                p_y = np.random.uniform(7., 9.)
-                t_x = np.random.uniform(1., 1.5)
-                t_y = np.random.uniform(7., 9.)
-                o_z, o_w = 3.4, 1.5
+                p_x = np.random.uniform(10., 19.)
+                p_y = np.random.uniform(5., 11.)
+                t_x = np.random.uniform(0., 7.)
+                t_y = np.random.uniform(5., 11.)
+                o_z, o_w = np.random.uniform(3.2, 3.6), np.random.uniform(1.3, 1.7)
 
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                        'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
@@ -414,24 +423,30 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         raise NotImplementedError()
 
-    def _get_obs(self):
-        time_now = time.time()
-        image = self.laserscan_to_image(self.laser_scan)
+    def _encode_state(self, laser_scan, rel_target_position):
+        image = self.laserscan_to_image(laser_scan)
         robot = np.zeros((self.img_size, self.img_size, 3), dtype=np.uint8)
-        robot = cv2.circle(robot, (self.img_size//2, self.img_size//2), radius=2, color=(255, 0, 0), thickness=2)
+        robot = cv2.circle(robot, (self.img_size // 2, self.img_size // 2), radius=2, color=(255, 0, 0), thickness=2)
         image += robot
-        pos_x, pos_y = self._get_pos_x_y()
-        t_x, t_y = self.target_p[0], self.target_p[1]
-        p_x = abs(t_x - pos_x)
-        p_y = abs(t_y - pos_y)
-        angle_to_target = np.arctan2(p_x, p_y)
-        distance_to_target = self._get_distance((pos_x, pos_y), (t_x, t_y))
-        yaw = self._get_angle_z()
+        pix_x, pix_y = rel_target_position
+        image = cv2.circle(image, (pix_x, pix_y), radius=2, color=(0, 255, 0), thickness=3)
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        image = image.astype(np.float32)
+        image /= 255.
+
+        image /= image.max()
+        image = np.clip(image, 0.0, 1.0)
+
+        # if np.random.rand() < 0.5:
+        #plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind), image)
+        return image
+
+    def _get_obs(self):
 
         def pol2cart(rho, phi):
             x = rho * np.cos(phi)
             y = rho * np.sin(phi)
-            return (x, y)
+            return x, y
 
         def target_to_pixels(target_x, target_y, lidar_range):
             target_x = max(min(target_x, lidar_range/2.), -lidar_range/2.)
@@ -441,23 +456,22 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             return pix_x + self.img_size//2, pix_y + self.img_size//2
 
         def get_target_coords(dist, phi, lidar_range):
-            (x, y) = pol2cart(dist / 2., phi)
+            x, y = pol2cart(dist / 2., phi)
             x, y = target_to_pixels(x, y, lidar_range)
             return x, y
 
-        offs = 0.
-        dx = pos_x-t_x
-        dy = pos_y-t_y
+        pos_x, pos_y = self._get_pos_x_y()
+        target_x, target_y = self.target_p[0], self.target_p[1]
+        distance_to_target = self._get_distance((pos_x, pos_y), (target_x, target_y))
+        yaw_of_robot = self._get_angle_z()
+        dx = pos_x-target_x
+        dy = pos_y-target_y
         angle_to_target = np.arctan2(dx, dy)
 
-        pix_x, pix_y = get_target_coords(dist=distance_to_target, phi=yaw+angle_to_target+offs, lidar_range=self.max_lidar_range)
-        image = cv2.circle(image, (pix_x, pix_y), radius=2, color=(0, 255, 0), thickness=3)
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        image = image.astype(np.float32)
-        image /= 255.
+        pix_x, pix_y = get_target_coords(dist=distance_to_target, phi=yaw_of_robot+angle_to_target, lidar_range=self.max_lidar_range)
 
-        #if np.random.rand() < 0.5:
-        plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind), image)
+        image = self._encode_state(self.laser_scan, (pix_x, pix_y))
+
         self.obs_save_ind += 1
         self.obs_images = np.append(self.obs_images, image.reshape((84, 84, 1)), axis=2)
         self.obs_images = np.delete(self.obs_images, 0, axis=2)
@@ -590,6 +604,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                 xy_scan[i][0] = float(ranges[i] * math.cos(angle))
                 xy_scan[i][1] = float(ranges[i] * math.sin(angle))
                 b_i = 0.0
+                # set all pixels to white until b_i is equal to current range
                 while True:
                     pt_x = float(b_i * math.cos(angle))
                     pt_y = float(b_i * math.sin(angle))
@@ -605,7 +620,5 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
         blank_image = cv2.rotate(blank_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE)
         blank_image = cv2.resize(blank_image, (84, 84), interpolation=cv2.INTER_AREA)
-
-        img = self.bridge.cv2_to_imgmsg(blank_image, encoding="bgr8")
 
         return blank_image
