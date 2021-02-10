@@ -234,6 +234,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def _get_ini_and_target_position_env3(self):
 
         env = np.random.randint(0, 3)
+        env = 0
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
         if env == 0:
@@ -241,7 +242,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             if choice == 0:
                 p_x = np.random.uniform(-0.5, 5.5)
                 p_y = np.random.uniform(-0.5, 2.)
-                if np.random.randint(0, 2) == 1:
+                if np.random.randint(0, 1) == 0:
                     t_x = np.random.uniform(-4.25, -3.75)
                     t_y = np.random.uniform(-5.25, -4.75)
                 else:
@@ -249,7 +250,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                     t_y = np.random.uniform(-5.25, -4.)
                 o_w = np.random.uniform(3.8, 4.2)
             else:
-                if np.random.randint(0, 2) == 1:
+                if np.random.randint(0, 1) == 0:
                     p_x = np.random.uniform(-4.25, -3.75)
                     p_y = np.random.uniform(-5.25, -4.75)
                 else:
@@ -438,7 +439,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         image = np.clip(image, 0.0, 1.0)
 
         # if np.random.rand() < 0.5:
-        #plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind), image)
+        plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind+1000000), image)
         return image
 
     def _get_obs(self):
