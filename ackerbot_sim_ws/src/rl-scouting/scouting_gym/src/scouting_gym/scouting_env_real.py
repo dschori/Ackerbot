@@ -2,25 +2,19 @@ import math
 import time
 from pathlib import Path
 
-# from sensor_msgs.msg import Image
-# from tf.transformations import quaternion_from_euler
 import matplotlib.pyplot as plt
 import numpy as np
 import rospy
 import gym
 from ackermann_msgs.msg import AckermannDriveStamped
 from cv_bridge import CvBridge
-from gazebo_msgs.msg import ModelState
-from gazebo_msgs.srv import SetModelState
 from gym import spaces
-from nav_msgs.msg import Odometry
 from tf2_msgs.msg import TFMessage
 import tf
-from sensor_msgs.msg import LaserScan, CompressedImage
+from sensor_msgs.msg import LaserScan
 from std_msgs.msg import Float64, String
 import cv2
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from scipy.signal import savgol_filter
 
 default_sleep = 1
 
@@ -75,7 +69,7 @@ class ScoutingEnvInference(gym.Env):
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
-        self.number_of_sleeps = 15
+        self.number_of_sleeps = 10
         self.target_p = (-3.3, -1.7)
         self.last_d = 10.
         self.steerings = []
@@ -106,8 +100,8 @@ class ScoutingEnvInference(gym.Env):
                 reward1 = -0.001
 
             ranges = self.get_laser_scan()
-            if np.min(ranges) < 0.8:
-                reward1 += -0.25 * (1 - np.min(ranges))
+            if np.min(ranges) < 1.:
+                reward1 += -0.5 * (1. - np.min(ranges))
 
             self.reward_publisher.publish(reward1)
             return reward1
@@ -122,11 +116,11 @@ class ScoutingEnvInference(gym.Env):
 
         steering_angle = 0.
         if action == 0:
-            steering_angle = -0.6
+            steering_angle = -0.9
         elif action == 1:
             steering_angle = 0.
         elif action == 2:
-            steering_angle = 0.6
+            steering_angle = 0.9
 
         self.last_action = action
         self.steering(steering_angle, self.speed)
@@ -225,72 +219,60 @@ class ScoutingEnvInference(gym.Env):
 
         rospy.logdebug("All Publishers READY")
 
-    def _get_obs_old(self):
-        scan = self._process_scan()
-        pos_x, pos_y = self._get_pos_x_y()
-        t_x, t_y = self.target_p[0], self.target_p[1]
-        p_x = t_x - pos_x
-        p_y = t_y - pos_y
-
-        # obs = np.append(scan, np.array([p_x, p_y]).reshape((1, 2)))
-
-        scan = np.clip(scan.reshape((18, )), a_min=0.0, a_max=3.99)
-        pos_to_target = np.clip(np.array([p_x, p_y]).reshape((2, )), a_min=-9.99, a_max=9.99).astype(np.float32)
-        velocity = np.clip(np.array([self.last_p_x - p_x, self.last_p_y - p_y]).reshape((2, )), a_min=-.99, a_max=.99).astype(np.float32)
-        self.last_p_x = p_x
-        self.last_p_y = p_y
-        self.target_pos_publisher.publish("t: {}, v: {}, steps: {}".format(pos_to_target, velocity, self.cumulated_steps))
-        return (scan, pos_to_target, velocity)
-
-    def _get_obs(self):
-        time_now = time.time()
-        image = self.laserscan_to_image(self.laser_scan)
+    def _encode_state(self, laser_scan, rel_target_position):
+        image = self.laserscan_to_image(laser_scan)
         robot = np.zeros((self.img_size, self.img_size, 3), dtype=np.uint8)
-        robot = cv2.circle(robot, (self.img_size//2, self.img_size//2), radius=2, color=(255, 0, 0), thickness=2)
+        robot = cv2.circle(robot, (self.img_size // 2, self.img_size // 2), radius=2, color=(255, 0, 0), thickness=2)
         image += robot
-        pos_x, pos_y = self._get_pos_x_y()
-        t_x, t_y = self.target_p[0], self.target_p[1]
-        p_x = abs(t_x - pos_x)
-        p_y = abs(t_y - pos_y)
-        angle_to_target = np.arctan2(p_x, p_y)
-        distance_to_target = self._get_distance((pos_x, pos_y), (t_x, t_y))
-        yaw = self._get_angle_z()
-
-        def pol2cart(rho, phi):
-            x = rho * np.cos(phi)
-            y = rho * np.sin(phi)
-            return (x, y)
-
-        def target_to_pixels(target_x, target_y, lidar_range):
-
-            target_x = max(min(target_x, lidar_range/2.), -lidar_range/2.)
-            target_y = max(min(target_y, lidar_range/2.), -lidar_range/2.)
-            pix_x = int(((self.img_size//2-4) / (lidar_range/2.)) * target_x)
-            pix_y = int(((self.img_size//2-4) / (lidar_range/2.)) * target_y)
-            return pix_x + self.img_size//2, pix_y + self.img_size//2
-
-        def new(dist, phi, lidar_range):
-            (x, y) = pol2cart(dist / 2., phi)
-            x, y = target_to_pixels(x, y, lidar_range)
-            return x, y
-
-        offs = 0.
-        dx = pos_x-t_x
-        dy = pos_y-t_y
-        angle_to_target = np.arctan2(dx, dy)
-
-        pix_x, pix_y = new(dist=distance_to_target, phi=yaw+angle_to_target+offs, lidar_range=self.max_lidar_range)
+        pix_x, pix_y = rel_target_position
         image = cv2.circle(image, (pix_x, pix_y), radius=2, color=(0, 255, 0), thickness=3)
         image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         image = image.astype(np.float32)
         image /= 255.
 
-        if np.random.rand() < 0.5:
-            plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind), image)
-            self.obs_save_ind += 1
-        #print(time.time()-time_now)
+        image /= image.max()
+        image = np.clip(image, 0.0, 1.0)
+
+        # if np.random.rand() < 0.5:
+        plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind+1000000), image)
+        return image
+
+    def _get_obs(self):
+
+        def pol2cart(rho, phi):
+            x = rho * np.cos(phi)
+            y = rho * np.sin(phi)
+            return x, y
+
+        def target_to_pixels(target_x, target_y, lidar_range):
+            target_x = max(min(target_x, lidar_range / 2.), -lidar_range / 2.)
+            target_y = max(min(target_y, lidar_range / 2.), -lidar_range / 2.)
+            pix_x = int(((self.img_size // 2 - 4) / (lidar_range / 2.)) * target_x)
+            pix_y = int(((self.img_size // 2 - 4) / (lidar_range / 2.)) * target_y)
+            return pix_x + self.img_size // 2, pix_y + self.img_size // 2
+
+        def get_target_coords(dist, phi, lidar_range):
+            x, y = pol2cart(dist / 2., phi)
+            x, y = target_to_pixels(x, y, lidar_range)
+            return x, y
+
+        pos_x, pos_y = self._get_pos_x_y()
+        target_x, target_y = self.target_p[0], self.target_p[1]
+        distance_to_target = self._get_distance((pos_x, pos_y), (target_x, target_y))
+        yaw_of_robot = self._get_angle_z()
+        dx = pos_x - target_x
+        dy = pos_y - target_y
+        angle_to_target = np.arctan2(dx, dy)
+
+        pix_x, pix_y = get_target_coords(dist=distance_to_target, phi=yaw_of_robot + angle_to_target,
+                                         lidar_range=self.max_lidar_range)
+
+        image = self._encode_state(self.laser_scan, (pix_x, pix_y))
+
+        self.obs_save_ind += 1
         self.obs_images = np.append(self.obs_images, image.reshape((84, 84, 1)), axis=2)
         self.obs_images = np.delete(self.obs_images, 0, axis=2)
+
         return np.flip(self.obs_images, axis=2)
 
     def _get_angle_z(self):
@@ -312,28 +294,15 @@ class ScoutingEnvInference(gym.Env):
         return math.hypot(a[0] - b[0], a[1] - b[1])
 
     def _get_pos_x_y(self):
-        #tfmessage = self.get_tfmessage()
-        #px = tfmessage.transform.translation.x
-        #py = tfmessage.transform.translation.y
-        trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+        while True:
+            try:
+                trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+                self.offs_x, self.offs_y = trans[0], trans[1]
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
         px, py = trans[0], trans[1]
-        #px += self.offs_x
-        #py += self.offs_y
         return (px, py)
-
-    def _process_scan(self):
-        ranges = self.get_laser_scan().astype('float32')
-        #distances = ranges.copy()
-        #distances = np.clip(distances, 0.0, 4.0)
-        #thetas = np.linspace(-3.14, 3.14, 897)
-        #plt.figure()
-        #plt.polar(thetas, distances)
-        #plt.show()
-        ranges -= 0.3
-        ranges = np.clip(ranges, 0.0, 4.0)
-        ranges_chunks = np.array_split(ranges, 18)
-        ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
-        return ranges_mean.reshape(1, 18)
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()
@@ -411,10 +380,10 @@ class ScoutingEnvInference(gym.Env):
 
         ranges = np.clip(ranges, 0.0, max_lidar_range)
 
-        ranges_chungs = np.array_split(ranges, 100)
-        tmp = []
-        ranges = [np.ones((len(chunk), ))*np.min(chunk) for chunk in ranges_chungs]
-        ranges = np.concatenate(ranges)
+        #ranges_chungs = np.array_split(ranges, 100)
+        #tmp = []
+        #ranges = [np.ones((len(chunk), ))*np.min(chunk) for chunk in ranges_chungs]
+        #ranges = np.concatenate(ranges)
         #print(ranges.shape)
 
         #ranges = savgol_filter(ranges, 51, 3)
@@ -447,7 +416,7 @@ class ScoutingEnvInference(gym.Env):
                         blank_image[pix_y, pix_x] = [0, 0, 0]
                     except IndexError:
                         break
-                    b_i+=0.15
+                    b_i+=0.2
 
         blank_image = cv2.rotate(blank_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE)
         blank_image = cv2.resize(blank_image, (84, 84), interpolation=cv2.INTER_AREA)

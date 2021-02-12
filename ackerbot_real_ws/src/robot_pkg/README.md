@@ -10,6 +10,11 @@
 zuerst rocore auf laptop
 dann diese im docker:
 export ROS_MASTER_URI="http://192.168.178.50:11311"
+export ROS_MASTER_URI="http://10.42.0.143:11311"
+
+export ROS_MASTER_URI="http://192.168.33.3:11311"
+
+rosbag record -a -O data.bag -x "/camera_t265/fisheye1/(.*)|/camera_t265/fisheye2/(.*)" --split --size 1024
 
 
 ## Starting the docker container:
