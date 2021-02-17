@@ -30,7 +30,7 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
-        self.number_of_sleeps = 25
+        self.number_of_sleeps = 10
         super(ScoutingDiscreteTask, self).__init__()
 
     def set_sleep_rate(self, hz):

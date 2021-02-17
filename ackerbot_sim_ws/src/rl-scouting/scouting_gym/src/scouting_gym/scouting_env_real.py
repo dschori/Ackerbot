@@ -69,13 +69,14 @@ class ScoutingEnvInference(gym.Env):
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
-        self.number_of_sleeps = 10
+        self.number_of_sleeps = 5
         self.target_p = (-3.3, -1.7)
         self.last_d = 10.
         self.steerings = []
         self.offs_x, self.offs_y = 0., 0.
         self.last_p_x = 0.
         self.last_p_y = 0.
+        self.img_prefix = ""
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
     def set_sleep_rate(self, hz):
@@ -112,7 +113,7 @@ class ScoutingEnvInference(gym.Env):
     def step(self, action):
         self.cumulated_steps += 1
 
-        self.speed = 0.25
+        self.speed = 0.3
 
         steering_angle = 0.
         if action == 0:
@@ -146,7 +147,7 @@ class ScoutingEnvInference(gym.Env):
 
         while not rospy.is_shutdown():
             try:
-                trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+                trans, rot = self.odom_listener.lookupTransform('/map', '/base_link', rospy.Time(0))
                 self.offs_x, self.offs_y = trans[0], trans[1]
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -234,7 +235,7 @@ class ScoutingEnvInference(gym.Env):
         image = np.clip(image, 0.0, 1.0)
 
         # if np.random.rand() < 0.5:
-        plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind+1000000), image)
+        plt.imsave('{}/img_logs/{}_obs_{}.png'.format(Path.home(), self.img_prefix, self.obs_save_ind+1000000), image)
         return image
 
     def _get_obs(self):
@@ -278,7 +279,7 @@ class ScoutingEnvInference(gym.Env):
     def _get_angle_z(self):
         while True:
             try:
-                trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+                trans, rot = self.odom_listener.lookupTransform('/map', '/base_link', rospy.Time(0))
                 self.offs_x, self.offs_y = trans[0], trans[1]
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -296,7 +297,7 @@ class ScoutingEnvInference(gym.Env):
     def _get_pos_x_y(self):
         while True:
             try:
-                trans, rot = self.odom_listener.lookupTransform('/odom', '/base_link', rospy.Time(0))
+                trans, rot = self.odom_listener.lookupTransform('/map', '/base_link', rospy.Time(0))
                 self.offs_x, self.offs_y = trans[0], trans[1]
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
