@@ -28,9 +28,9 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         self.right_left = 0
         self.action_space = spaces.Discrete(3)
         self.rate = None
-        self.speed = 1
         self.set_sleep_rate(100)
-        self.number_of_sleeps = 10
+        self.number_of_sleeps = 25
+        #self.number_of_sleeps = 15
         super(ScoutingDiscreteTask, self).__init__()
 
     def set_sleep_rate(self, hz):
@@ -58,20 +58,24 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         self.cumulated_steps += 1
         #self._update_dyn1()
         steering_angle = 0
-        self.speed = 0.6
+        speed = self.speed
+        #speed = self.speed + np.random.normal(0., 0.01)
+        speed = np.clip(speed, 0.1, 1.)
         if action == 0:  # right
-            steering_angle = -0.45
+            steering_angle = self.right_steering
+            steering_angle = np.clip(steering_angle, -1., 0.)
         elif action == 1:  # middle
             steering_angle = 0
         elif action == 2:  # left
-            steering_angle = 0.45
+            steering_angle = self.left_steering
+            steering_angle = np.clip(steering_angle, 0., 1.)
 
         self.last_action = action
-        self.steering(steering_angle, self.speed)
+        self.steering(steering_angle, speed)
         if self.rate:
             for i in range(int(self.number_of_sleeps)):
                 self.rate.sleep()
-                self.steering(steering_angle, self.speed)
+                self.steering(steering_angle, speed)
 
     def _compute_reward(self, obs, action, done, finished):
         reward1, reward2 = .0, .0

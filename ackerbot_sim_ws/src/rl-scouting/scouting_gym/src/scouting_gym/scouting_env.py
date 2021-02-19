@@ -89,7 +89,6 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.dyn1_last = self.dyn1_x_max
         self.dyn1_state = 0
 
-
         self._check_publishers_connection()
 
         self.gazebo.pauseSim()
@@ -104,6 +103,13 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.obs_images = np.zeros((84, 84, 4))
         self.max_lidar_range = 5.
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.img_size, self.img_size, 4))
+        # self.observation_space = spaces.Tuple([
+        #     spaces.Box(low=0.0, high=1.0, shape=(20,)),
+        #     spaces.Box(low=-20., high=20., shape=(2,))
+        # ])
+        self.speed = 1.
+        self.left_steering = 0.
+        self.right_steering = 0.
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
     def _update_dyn1(self):
@@ -233,12 +239,13 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _get_ini_and_target_position_env3(self):
 
-        env = np.random.randint(0, 3)
-        env = 0
+        env = np.random.randint(0, 2)
+        env=0
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
         if env == 0:
             choice = np.random.randint(0, 2)
+            choice = 1
             if choice == 0:
                 p_x = np.random.uniform(-0.5, 5.5)
                 p_y = np.random.uniform(-0.5, 2.)
@@ -304,6 +311,110 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             target_pos = (t_x, t_y)
             return ini_pos, target_pos
 
+    def _get_ini_and_target_position_env3_test(self):
+
+        env = np.random.randint(0, 2)
+        env=0
+        p_x, p_y, p_z = 0.0, 0.0, 0.05
+        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
+        if env == 0:
+            choice = np.random.randint(0, 2)
+            choice = 1
+            if choice == 0:
+                p_x = np.random.uniform(-0.5, 5.5)
+                p_y = np.random.uniform(-0.5, 2.)
+                if np.random.randint(0, 1) == 0:
+                    t_x = np.random.uniform(-4.25, -3.75)
+                    t_y = np.random.uniform(-5.25, -4.75)
+                else:
+                    t_x = np.random.uniform(0., 4.)
+                    t_y = np.random.uniform(-5.25, -4.)
+                o_w = np.random.uniform(3.8, 4.2)
+            else:
+                if np.random.randint(0, 1) == 0:
+                    p_x = np.random.uniform(-4.25, -3.75)
+                    p_y = np.random.uniform(-5.25, -4.75)
+                else:
+                    p_x = np.random.uniform(0., 4.)
+                    p_y = np.random.uniform(-5.25, -4.)
+                t_x = 0.
+                t_y = 0.
+                o_w = np.random.uniform(1.3, 1.7)
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': np.random.uniform(1.3, 1.7), 'o_w': o_w}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+
+    def _get_ini_and_target_position_env4(self):
+
+        env = np.random.randint(0, 2)
+        p_x, p_y, p_z = 0.0, 0.0, 0.05
+        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
+        if env == 0:
+            choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(-4, -5.)
+                p_y = np.random.uniform(-10.5, -11.5)
+                t_x = np.random.uniform(-2., 0.)
+                t_y = np.random.uniform(-6., -7.)
+
+                o_z = np.random.uniform(3., 3.3)
+                o_w = np.random.uniform(3., 3.3)
+            else:
+                p_x = np.random.uniform(-2., 0.)
+                p_y = np.random.uniform(-6., -7.)
+                t_x = np.random.uniform(-4, -5.)
+                t_y = np.random.uniform(-10.5, -11.5)
+
+                o_z = 0.
+                o_w = np.random.uniform(1.4, 1.6)
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+        elif env == 1:
+            choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(4.5, 6.)
+                p_y = np.random.uniform(-6., -7.)
+                t_x = np.random.uniform(4.5, 6.)
+                t_y = np.random.uniform(-10., -11.5)
+
+                o_z = 0.
+                o_w = -np.random.uniform(1.4, 1.6)
+            else:
+                p_x = np.random.uniform(4.5, 6.)
+                p_y = np.random.uniform(-10., -11.5)
+                t_x = np.random.uniform(4.5, 6.)
+                t_y = np.random.uniform(-6., -7.)
+
+                o_z = np.random.uniform(3., 3.3)
+                o_w = np.random.uniform(3., 3.3)
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+        elif env == 2:
+            choice = np.random.randint(0, 2)
+            if choice == 0:
+                p_x = np.random.uniform(-3., 0.)
+                p_y = np.random.uniform(2., -3.)
+                t_x = np.random.uniform(5., 7.)
+                t_y = np.random.uniform(0., -3.)
+
+                o_z, o_w = np.random.uniform(1.3, 1.7), np.random.uniform(3.8, 4.2)
+            else:
+                p_x = np.random.uniform(5., 7.)
+                p_y = np.random.uniform(0., -3.)
+                t_x = np.random.uniform(-3., 0.)
+                t_y = np.random.uniform(2., -3.)
+
+                o_z, o_w = np.random.uniform(3.2, 3.6), np.random.uniform(1.3, 1.7)
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+
     def reset_position(self):
         if not self.initial_position:
             return
@@ -323,7 +434,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         super(ScoutingEnv, self).reset()
         self.obs_images = np.zeros((84, 84, 4))
         self.cumulated_steps = 0
-        self.initial_position, self.target_p = self._get_ini_and_target_position_env3()
+        self.initial_position, self.target_p = self._get_ini_and_target_position_env3_test()
         self.last_p_x = self.initial_position['p_x']
         self.last_p_y = self.initial_position['p_y']
 
@@ -333,7 +444,12 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         time.sleep(default_sleep)
         self.gazebo.pauseSim()
         self.cumulated_steps = 0
-        plt.show()
+        self.speed = np.random.uniform(0.2, 1.0)
+        self.left_steering = np.random.uniform(0.35, 1.0)
+        self.right_steering = np.random.uniform(-0.35, -1.0)
+        self.speed = 0.6
+        self.left_steering = 0.7
+        self.right_steering = -0.7
 
         return self._get_obs()
 
@@ -439,8 +555,27 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         image = np.clip(image, 0.0, 1.0)
 
         # if np.random.rand() < 0.5:
-        plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind+1000000), image)
+        #plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind + 1000000), image)
         return image
+
+    def _process_scan(self):
+        ranges = self.get_laser_scan().astype('float32') - 0.1
+        # ranges = ranges[250:-250]
+        ranges = np.clip(ranges, 0.0, 8.0) / 8.
+        ranges_chunks = np.array_split(ranges, 20)
+        ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
+        return ranges_mean.reshape(20, )
+
+    def _get_obs_old(self):
+
+        scan = self._process_scan()
+        pos_x, pos_y = self._get_pos_x_y()
+        target_x, target_y = self.target_p[0], self.target_p[1]
+        dx = pos_x - target_x
+        dy = pos_y - target_y
+        dist = np.array([dx, dy]).reshape(2, )
+        dist = np.clip(dist, -19.99, 19.99)
+        return (scan, dist)
 
     def _get_obs(self):
 
@@ -450,11 +585,11 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             return x, y
 
         def target_to_pixels(target_x, target_y, lidar_range):
-            target_x = max(min(target_x, lidar_range/2.), -lidar_range/2.)
-            target_y = max(min(target_y, lidar_range/2.), -lidar_range/2.)
-            pix_x = int(((self.img_size//2-4) / (lidar_range/2.)) * target_x)
-            pix_y = int(((self.img_size//2-4) / (lidar_range/2.)) * target_y)
-            return pix_x + self.img_size//2, pix_y + self.img_size//2
+            target_x = max(min(target_x, lidar_range / 2.), -lidar_range / 2.)
+            target_y = max(min(target_y, lidar_range / 2.), -lidar_range / 2.)
+            pix_x = int(((self.img_size // 2 - 4) / (lidar_range / 2.)) * target_x)
+            pix_y = int(((self.img_size // 2 - 4) / (lidar_range / 2.)) * target_y)
+            return pix_x + self.img_size // 2, pix_y + self.img_size // 2
 
         def get_target_coords(dist, phi, lidar_range):
             x, y = pol2cart(dist / 2., phi)
@@ -465,11 +600,12 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         target_x, target_y = self.target_p[0], self.target_p[1]
         distance_to_target = self._get_distance((pos_x, pos_y), (target_x, target_y))
         yaw_of_robot = self._get_angle_z()
-        dx = pos_x-target_x
-        dy = pos_y-target_y
+        dx = pos_x - target_x
+        dy = pos_y - target_y
         angle_to_target = np.arctan2(dx, dy)
 
-        pix_x, pix_y = get_target_coords(dist=distance_to_target, phi=yaw_of_robot+angle_to_target, lidar_range=self.max_lidar_range)
+        pix_x, pix_y = get_target_coords(dist=distance_to_target, phi=yaw_of_robot + angle_to_target,
+                                         lidar_range=self.max_lidar_range)
 
         image = self._encode_state(self.laser_scan, (pix_x, pix_y))
 
@@ -510,7 +646,8 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _is_done(self, observations):
         self._episode_done = self._is_collided()
-        if self._episode_done or self.cumulated_steps > 300:
+        if self._episode_done or self.cumulated_steps > 400:
+            # if self._episode_done or self.cumulated_steps > 500:
             return True
         else:
             return False
@@ -583,9 +720,9 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         ranges = scan.ranges
         ranges = np.clip(ranges, 0.0, max_lidar_range)
 
-        #ranges_chungs = np.array_split(ranges, 72)
-        #ranges = [np.ones((len(chunk),)) * np.min(chunk) for chunk in ranges_chungs]
-        #ranges = np.concatenate(ranges)
+        # ranges_chungs = np.array_split(ranges, 72)
+        # ranges = [np.ones((len(chunk),)) * np.min(chunk) for chunk in ranges_chungs]
+        # ranges = np.concatenate(ranges)
 
         # Calculate the number of points in array of ranges
         num_pts = len(ranges)
@@ -617,7 +754,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                         blank_image[pix_y, pix_x] = [0, 0, 0]
                     except IndexError:
                         break
-                    b_i+=0.2
+                    b_i += 0.2
 
         blank_image = cv2.rotate(blank_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE)
         blank_image = cv2.resize(blank_image, (84, 84), interpolation=cv2.INTER_AREA)
