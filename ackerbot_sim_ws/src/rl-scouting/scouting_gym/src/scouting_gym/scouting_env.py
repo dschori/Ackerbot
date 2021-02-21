@@ -240,12 +240,10 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def _get_ini_and_target_position_env3(self):
 
         env = np.random.randint(0, 2)
-        env=0
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
         if env == 0:
             choice = np.random.randint(0, 2)
-            choice = 1
             if choice == 0:
                 p_x = np.random.uniform(-0.5, 5.5)
                 p_y = np.random.uniform(-0.5, 2.)
@@ -332,8 +330,8 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
                 o_w = np.random.uniform(3.8, 4.2)
             else:
                 if np.random.randint(0, 1) == 0:
-                    p_x = np.random.uniform(-4.25, -3.75)
-                    p_y = np.random.uniform(-5.25, -4.75)
+                    p_x = -4.0
+                    p_y = -5.0
                 else:
                     p_x = np.random.uniform(0., 4.)
                     p_y = np.random.uniform(-5.25, -4.)
@@ -434,7 +432,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         super(ScoutingEnv, self).reset()
         self.obs_images = np.zeros((84, 84, 4))
         self.cumulated_steps = 0
-        self.initial_position, self.target_p = self._get_ini_and_target_position_env3_test()
+        self.initial_position, self.target_p = self._get_ini_and_target_position_env3()
         self.last_p_x = self.initial_position['p_x']
         self.last_p_y = self.initial_position['p_y']
 
