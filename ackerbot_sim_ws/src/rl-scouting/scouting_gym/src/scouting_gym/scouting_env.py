@@ -30,7 +30,8 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.initial_position = None
 
-        self.min_distance = .55
+        #self.min_distance = .55
+        self.min_distance = .4
 
         self.last_int_difference = 0
         self.target_pos = (0.0, 2.0)
@@ -110,6 +111,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.speed = 1.
         self.left_steering = 0.
         self.right_steering = 0.
+        self.img_prefix = ''
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
     def _update_dyn1(self):
@@ -311,33 +313,16 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _get_ini_and_target_position_env3_test(self):
 
-        env = np.random.randint(0, 2)
         env=0
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
         if env == 0:
-            choice = np.random.randint(0, 2)
-            choice = 1
-            if choice == 0:
-                p_x = np.random.uniform(-0.5, 5.5)
-                p_y = np.random.uniform(-0.5, 2.)
-                if np.random.randint(0, 1) == 0:
-                    t_x = np.random.uniform(-4.25, -3.75)
-                    t_y = np.random.uniform(-5.25, -4.75)
-                else:
-                    t_x = np.random.uniform(0., 4.)
-                    t_y = np.random.uniform(-5.25, -4.)
-                o_w = np.random.uniform(3.8, 4.2)
-            else:
-                if np.random.randint(0, 1) == 0:
-                    p_x = -4.0
-                    p_y = -5.0
-                else:
-                    p_x = np.random.uniform(0., 4.)
-                    p_y = np.random.uniform(-5.25, -4.)
-                t_x = 0.
-                t_y = 0.
-                o_w = np.random.uniform(1.3, 1.7)
+            p_x = -4.0
+            p_y = -5.0
+
+            t_x = 0.
+            t_y = 0.
+            o_w = np.random.uniform(1.3, 1.7)
             ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                        'o_y': o_y, 'o_z': np.random.uniform(1.3, 1.7), 'o_w': o_w}
             target_pos = (t_x, t_y)
@@ -413,6 +398,34 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             target_pos = (t_x, t_y)
             return ini_pos, target_pos
 
+    def _get_ini_and_target_position_env4_test(self):
+
+        env = 0
+        p_x, p_y, p_z = 0.0, 0.0, 0.05
+        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
+        if env == 0:
+            choice = 0
+            if choice == 0:
+                p_x = -3
+                p_y = -9.5
+                t_x = -1.0
+                t_y = -6.5
+
+                o_z = 0.
+                o_w = -1.5
+            else:
+                p_x = np.random.uniform(-2., 0.)
+                p_y = np.random.uniform(-6., -7.)
+                t_x = np.random.uniform(-4, -5.)
+                t_y = np.random.uniform(-10.5, -11.5)
+
+                o_z = 0.
+                o_w = np.random.uniform(1.4, 1.6)
+            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
+            target_pos = (t_x, t_y)
+            return ini_pos, target_pos
+
     def reset_position(self):
         if not self.initial_position:
             return
@@ -432,7 +445,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         super(ScoutingEnv, self).reset()
         self.obs_images = np.zeros((84, 84, 4))
         self.cumulated_steps = 0
-        self.initial_position, self.target_p = self._get_ini_and_target_position_env3()
+        self.initial_position, self.target_p = self._get_ini_and_target_position_env3_test()
         self.last_p_x = self.initial_position['p_x']
         self.last_p_y = self.initial_position['p_y']
 
@@ -553,7 +566,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         image = np.clip(image, 0.0, 1.0)
 
         # if np.random.rand() < 0.5:
-        #plt.imsave('{}/img_logs/obs_{}.png'.format(Path.home(), self.obs_save_ind + 1000000), image)
+        plt.imsave('{}/img_logs/{}_obs_{}.png'.format(Path.home(),self.img_prefix, self.obs_save_ind + 1000000), image)
         return image
 
     def _process_scan(self):
