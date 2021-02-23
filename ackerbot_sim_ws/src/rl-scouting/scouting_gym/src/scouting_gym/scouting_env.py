@@ -312,21 +312,18 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
             return ini_pos, target_pos
 
     def _get_ini_and_target_position_env3_test(self):
-
-        env=0
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if env == 0:
-            p_x = -4.0
-            p_y = -5.0
+        p_x = -4.0
+        p_y = -5.0
 
-            t_x = 0.
-            t_y = 0.
-            o_w = np.random.uniform(1.3, 1.7)
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': np.random.uniform(1.3, 1.7), 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
+        t_x = 0.
+        t_y = 0.
+        o_w = np.random.uniform(1.3, 1.7)
+        ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                   'o_y': o_y, 'o_z': np.random.uniform(1.3, 1.7), 'o_w': o_w}
+        target_pos = (t_x, t_y)
+        return ini_pos, target_pos
 
     def _get_ini_and_target_position_env4(self):
 
@@ -400,31 +397,19 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
     def _get_ini_and_target_position_env4_test(self):
 
-        env = 0
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if env == 0:
-            choice = 0
-            if choice == 0:
-                p_x = -3
-                p_y = -9.5
-                t_x = -1.0
-                t_y = -6.5
+        p_x = -3
+        p_y = -9.5
+        t_x = -1.0
+        t_y = -6.5
 
-                o_z = 0.
-                o_w = -1.5
-            else:
-                p_x = np.random.uniform(-2., 0.)
-                p_y = np.random.uniform(-6., -7.)
-                t_x = np.random.uniform(-4, -5.)
-                t_y = np.random.uniform(-10.5, -11.5)
-
-                o_z = 0.
-                o_w = np.random.uniform(1.4, 1.6)
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
+        o_z = 0.
+        o_w = -1.5
+        ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                   'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
+        target_pos = (t_x, t_y)
+        return ini_pos, target_pos
 
     def reset_position(self):
         if not self.initial_position:
