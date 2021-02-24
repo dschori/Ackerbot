@@ -5,7 +5,7 @@ from tf_bag import BagTfTransformer
 
 sns.set_theme(style="whitegrid")
 
-direction = 2
+direction = 1
 approach = 'teb'
 
 fig, ax = plt.subplots(1, 1, figsize=(8, 8))
@@ -22,6 +22,10 @@ ax.add_patch(obstacle)
 obstacle = plt.Rectangle((-2.64, -3.0), width=100, height=0.91, alpha=0.5, color='black')
 ax.add_patch(obstacle)
 obstacle = plt.Rectangle((-2.0, -1.0), width=1, height=100, alpha=0.5, color='black')
+ax.add_patch(obstacle)
+obstacle = plt.Rectangle((-6.4, -4.3), width=0.35, height=0.8, alpha=0.5, color='black')
+ax.add_patch(obstacle)
+obstacle = plt.Rectangle((-7, -6), width=0.6, height=100, alpha=0.5, color='black')
 ax.add_patch(obstacle)
 
 if direction == 1:
@@ -42,6 +46,7 @@ def get_cmap(n, name='tab20'):
 
 cmap = get_cmap(150)
 legend_handles = []
+target_distribution = []
 for i in range(15):
     folder = 'd{}_{}'.format(direction, i + 1)
     print('processing: {}'.format(folder))
@@ -63,6 +68,7 @@ for i in range(15):
             pass
     starting_point = (x_s[0], y_s[0])
     ending_point = (x_s[-1], y_s[-1])
+    target_distribution.append(ending_point)
     ax.plot(*starting_point, marker='o', markersize=12, c=cmap(i * 10))
     ax.plot(*ending_point, marker='D', markersize=12, c=cmap(i * 10))
     line, = ax.plot(x_s, y_s, linestyle='dashed', linewidth=2, c=cmap(i * 10))
@@ -75,6 +81,7 @@ starting_obj, = ax.plot((-100, -100), marker='o', markersize=12, c='black')
 starting_obj.set_label('Start')
 ending_obj, = ax.plot((-100, -100), marker='D', markersize=12, c='black')
 ending_obj.set_label('End')
+
 
 ax.legend()
 plt.gca().invert_yaxis()
