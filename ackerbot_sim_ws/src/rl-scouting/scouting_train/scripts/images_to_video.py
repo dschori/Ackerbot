@@ -1,10 +1,13 @@
 import cv2
 import os
 
-nr = 199
+nr = 164
 
-image_folder = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/rl_training_process/img_logs/{}'.format(nr)
-video_name = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/rl_training_process/img_logs/check_{}.avi'.format(nr)
+# image_folder = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/rl_training_process2/img_logs/{}'.format(nr)
+# video_name = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/rl_training_process2/img_logs/check_{}.avi'.format(nr)
+folder_name = 'val_runs_forward'
+image_folder = '../data/{}/img_logs'.format(folder_name)
+video_name = '../data/{}/{}_state_video.avi'.format(folder_name, folder_name)
 
 images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
 frame = cv2.imread(os.path.join(image_folder, images[0]))
