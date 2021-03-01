@@ -34,7 +34,6 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.min_distance = .3
 
         self.last_int_difference = 0
-        self.target_pos = (0.0, 2.0)
 
         self.bridge = CvBridge()
 
@@ -104,14 +103,14 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.obs_images = np.zeros((84, 84, 4))
         self.max_lidar_range = 5.
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.img_size, self.img_size, 4))
-        # self.observation_space = spaces.Tuple([
-        #     spaces.Box(low=0.0, high=1.0, shape=(20,)),
-        #     spaces.Box(low=-20., high=20., shape=(2,))
-        # ])
         self.speed = 1.
         self.left_steering = 0.
         self.right_steering = 0.
         self.img_prefix = ''
+        self.starting_pos = (0., 0.)
+        self.target_pos = (0., 0.)
+        self.start_orientation = (0., 0.)
+        self.output_folder = ''
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
     def _update_dyn1(self):
@@ -314,11 +313,18 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
     def _get_ini_and_target_position_env3_test(self):
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        p_x = -4.0
-        p_y = -5.0
+        if True:
+            p_x = np.random.uniform(-3.9, -4.1)
+            p_y = np.random.uniform(-4.9, -5.1)
 
-        t_x = 0.
-        t_y = 0.
+            t_x = 0.
+            t_y = 0.
+        else:
+            p_x = np.random.uniform(-0.1, 0.1)
+            p_y = np.random.uniform(-0.1, 0.1)
+            t_x = -4.
+            t_y = -5.
+
         o_w = np.random.uniform(1.3, 1.7)
         ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                    'o_y': o_y, 'o_z': np.random.uniform(1.3, 1.7), 'o_w': o_w}
@@ -417,6 +423,19 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         target_pos = (t_x, t_y)
         return ini_pos, target_pos
 
+    def _get_ini_and_target_position_new(self):
+
+        p_x, p_y, p_z = 0.0, 0.0, 0.05
+        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
+        p_x, p_y = self.starting_pos[0] + np.random.uniform(-0.2, 0.2), self.starting_pos[1] + np.random.uniform(-0.2, 0.2)
+        t_x, t_y = self.target_pos[0], self.target_pos[1]
+        o_z, o_w = self.start_orientation[0], self.start_orientation[1]
+        ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
+                   'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
+        target_pos = (t_x, t_y)
+        return ini_pos, target_pos
+
+
     def reset_position(self):
         if not self.initial_position:
             return
@@ -436,7 +455,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         super(ScoutingEnv, self).reset()
         self.obs_images = np.zeros((84, 84, 4))
         self.cumulated_steps = 0
-        self.initial_position, self.target_p = self._get_ini_and_target_position_env3_test()
+        self.initial_position, self.target_p = self._get_ini_and_target_position_new()
         self.last_p_x = self.initial_position['p_x']
         self.last_p_y = self.initial_position['p_y']
 
@@ -555,9 +574,10 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
         image /= image.max()
         image = np.clip(image, 0.0, 1.0)
-
-        # if np.random.rand() < 0.5:
-        plt.imsave('{}/img_logs/{}_obs_{}.png'.format(Path.home(),self.img_prefix, self.obs_save_ind + 1000000), image)
+        if self.output_folder != '':
+            output_folder = '{}/img_logs'.format(self.output_folder)
+            Path(output_folder).mkdir(parents=True, exist_ok=True)
+            plt.imsave('{}/{}_obs_{}.png'.format(output_folder, self.img_prefix, self.obs_save_ind + 1000000), image, cmap='viridis')
         return image
 
     def _process_scan(self):
