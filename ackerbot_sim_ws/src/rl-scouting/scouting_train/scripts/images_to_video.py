@@ -3,11 +3,14 @@ import os
 
 nr = 164
 
-# image_folder = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/rl_training_process2/img_logs/{}'.format(nr)
-# video_name = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/rl_training_process2/img_logs/check_{}.avi'.format(nr)
-folder_name = 'train_runs_forward'
-image_folder = '../data/{}/img_logs'.format(folder_name)
-video_name = '../data/{}/{}_state_video.avi'.format(folder_name, folder_name)
+folder_name = '../data/train_runs_forward'
+#folder_name = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/test_runs_rl/d1_16'
+image_folder = '/{}/img_logs'.format(folder_name)
+video_name = '/{}/{}_state_video.avi'.format(folder_name, folder_name)
+
+nr = 'd2_16'
+image_folder = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/test_runs_rl/{}'.format(nr)
+video_name = 'C:/Users/damian.schori/switchdrive/Master-Masterarbeit/30_Videos/test_runs_rl/state_{}.avi'.format(nr, nr)
 
 image_files = sorted(os.listdir(image_folder), key=lambda x: int(x.split('_')[-1].split('.')[0]))
 images = [img for img in image_files if img.endswith(".png")]
