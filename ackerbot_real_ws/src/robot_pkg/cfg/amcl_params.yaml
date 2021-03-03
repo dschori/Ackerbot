@@ -1,6 +1,6 @@
 use_map_topic: true
 
-odom_frame_id: "odom"
+odom_frame_id: "camera_t265_odom_frame"
 base_frame_id: "base_link"
 global_frame_id: "map"
 
