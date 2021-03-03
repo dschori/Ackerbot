@@ -1,6 +1,0 @@
-realsense_ros_gazebo
-/home/dschori/MasterThesis/catkin_ws/devel/.private/realsense_ros_gazebo/cmake.lock /home/dschori/MasterThesis/catkin_ws/devel/./cmake.lock
-/home/dschori/MasterThesis/catkin_ws/devel/.private/realsense_ros_gazebo/share/realsense_ros_gazebo/cmake/realsense_ros_gazeboConfig.cmake /home/dschori/MasterThesis/catkin_ws/devel/share/realsense_ros_gazebo/cmake/realsense_ros_gazeboConfig.cmake
-/home/dschori/MasterThesis/catkin_ws/devel/.private/realsense_ros_gazebo/share/realsense_ros_gazebo/cmake/realsense_ros_gazeboConfig-version.cmake /home/dschori/MasterThesis/catkin_ws/devel/share/realsense_ros_gazebo/cmake/realsense_ros_gazeboConfig-version.cmake
-/home/dschori/MasterThesis/catkin_ws/devel/.private/realsense_ros_gazebo/lib/librealsense_gazebo_plugin.so /home/dschori/MasterThesis/catkin_ws/devel/lib/librealsense_gazebo_plugin.so
-/home/dschori/MasterThesis/catkin_ws/devel/.private/realsense_ros_gazebo/lib/pkgconfig/realsense_ros_gazebo.pc /home/dschori/MasterThesis/catkin_ws/devel/lib/pkgconfig/realsense_ros_gazebo.pc
