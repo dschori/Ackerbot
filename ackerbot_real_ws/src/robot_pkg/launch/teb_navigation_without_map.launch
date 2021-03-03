@@ -1,6 +1,6 @@
+<?xml version="1.0"?>
 <launch>
-
-        <!--  ************** Navigation ***************  -->
+    <!--  ****** Move Base with TEB Global and Local Planner *****  -->
 	<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
   	  	<rosparam file="$(find robot_pkg)/cfg/carlike/costmap_common_params.yaml" command="load" ns="global_costmap" />
   	 	<rosparam file="$(find robot_pkg)/cfg/carlike/costmap_common_params.yaml" command="load" ns="local_costmap" />
@@ -16,24 +16,13 @@
 		<param name="controller_frequency" value="5.0" />
 		<param name="controller_patience" value="15.0" />
 
-                <param name="clearing_rotation_allowed" value="false" /> <!-- Our carlike robot is not able to rotate in place -->
+        <param name="clearing_rotation_allowed" value="false" />
 	</node>
 
-
-		<!--  ****** Maps *****  -->
-	<node name="map_server" pkg="map_server" type="map_server" args="$(find robot_pkg)/maps/home_1.yaml" output="screen">
-                <param name="frame_id" value="map"/>
-	</node>
-
-	<node pkg="amcl" type="amcl" name="amcl" output="screen">
-		<rosparam file="$(find robot_pkg)/cfg/amcl_params.yaml" command="load" />
-	        <param name="initial_pose_x"            value="0.3"/>
-		<param name="initial_pose_y"            value="-0.7"/>
-		<param name="initial_pose_a"            value="0.35"/>
-	</node>
-
+    <!--  ****** Translate CMD_Vel to ackermann msg *****  -->
 	<node name="cmd_vel_to_ackermann_drive" pkg="robot_pkg" type="cmd_vel_to_ackermann_drive.py"/>
 
-        <node name="drive_controller" pkg="robot_pkg" type="drive_controller2.py"/>
+    <!--  ****** Drive Controller *****  -->
+  	<node name="drive_controller" pkg="robot_pkg" type="drive_controller.py"/>
 
 </launch>
