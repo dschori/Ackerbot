@@ -30,7 +30,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
         self.initial_position = None
 
-        #self.min_distance = .55
+        # self.min_distance = .55
         self.min_distance = .3
 
         self.last_int_difference = 0
@@ -113,328 +113,18 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         self.output_folder = ''
         rospy.logdebug("Finished NeuroRacerEnv INIT...")
 
-    def _update_dyn1(self):
-        if self.dyn1_state == 0:
-            self.dyn1_last += 0.005
-            if self.dyn1_last > self.dyn1_x_max:
-                self.dyn1_state = 1
-        else:
-            self.dyn1_last -= 0.005
-            if self.dyn1_last < self.dyn1_x_min:
-                self.dyn1_state = 0
-
-        ms = ModelState()
-        ms.model_name = 'unit_box_1'
-        ms.reference_frame = 'world'
-        ms.pose.position.x = 1.5
-        ms.pose.position.y = self.dyn1_last
-        self.dyn1_publisher.publish(ms)
-
-    def _get_ini_and_target_position_env1(self):
-
-        env = np.random.randint(0, 2)
-        p_x, p_y, p_z = 0.0, 0.0, 0.05
-        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if env == 0:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(-0.5, -1.0)
-                p_y = np.random.uniform(-4.3, -4.5)
-                t_x = np.random.uniform(-2.5, -3.0)
-                t_y = np.random.uniform(2.5, 3.0)
-            else:
-                p_x = np.random.uniform(-2.5, -3.0)
-                p_y = np.random.uniform(2.5, 3.0)
-                t_x = np.random.uniform(-0.5, -1.0)
-                t_y = np.random.uniform(-4.3, -4.5)
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': 1.5, 'o_w': 1.5}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-        elif env == 1:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(18.0, 18.5)
-                p_y = np.random.uniform(-4.5, -5.)
-                # t_x = np.random.uniform(10., 10.5)
-                # t_y = np.random.uniform(5.5, 6.0)
-                t_x = np.random.uniform(12., 12.5)
-                t_y = np.random.uniform(2.5, 3.0)
-            else:
-                # p_x = np.random.uniform(10., 10.5)
-                # p_y = np.random.uniform(5.5, 6.0)
-                p_x = np.random.uniform(12., 12.5)
-                p_y = np.random.uniform(2.5, 3.5)
-                t_x = np.random.uniform(18.0, 18.5)
-                t_y = np.random.uniform(-4.5, -5.)
-
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': 3.4, 'o_w': 1.5}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-    def _get_ini_and_target_position_env2(self):
-
-        env = np.random.randint(0, 3)
-        p_x, p_y, p_z = 0.0, 0.0, 0.05
-        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if env == 0:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(-6.75, -7.0)
-                p_y = np.random.uniform(-2.0, -1.0)
-                t_x = np.random.uniform(-1.75, -1.25)
-                t_y = np.random.uniform(-3.75, -4.25)
-                o_w = -1.5
-            else:
-                p_x = np.random.uniform(-1.75, -1.25)
-                p_y = np.random.uniform(-3.75, -4.25)
-                t_x = np.random.uniform(-6.75, -7.0)
-                t_y = np.random.uniform(-2.0, -1.0)
-                o_w = 1.5
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': 1.5, 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-        elif env == 1:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(1.25, 1.75)
-                p_y = np.random.uniform(-0.5, -1.0)
-                t_x = np.random.uniform(7.0, 7.5)
-                t_y = np.random.uniform(-4.25, -4.75)
-                o_w = -1.5
-            else:
-                p_x = np.random.uniform(7.0, 7.5)
-                p_y = np.random.uniform(-4.25, -4.75)
-                t_x = np.random.uniform(1.25, 1.75)
-                t_y = np.random.uniform(-0.5, -1.0)
-                o_w = 1.5
-
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': 1.5, 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-        elif env == 2:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(-6.0, -7.0)
-                p_y = np.random.uniform(-7.0, -8.0)
-                t_x = np.random.uniform(6.5, 7.0)
-                t_y = np.random.uniform(-9.75, -10.25)
-                o_w = -1.
-            else:
-                p_x = np.random.uniform(6.5, 7.0)
-                p_y = np.random.uniform(-9.75, -10.25)
-                t_x = np.random.uniform(-6.0, -7.0)
-                t_y = np.random.uniform(-7.0, -8.0)
-                o_w = 1.
-
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': 3., 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-    def _get_ini_and_target_position_env3(self):
-
-        env = np.random.randint(0, 2)
-        p_x, p_y, p_z = 0.0, 0.0, 0.05
-        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if env == 0:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(-0.5, 5.5)
-                p_y = np.random.uniform(-0.5, 2.)
-                if np.random.randint(0, 1) == 0:
-                    t_x = np.random.uniform(-4.25, -3.75)
-                    t_y = np.random.uniform(-5.25, -4.75)
-                else:
-                    t_x = np.random.uniform(0., 4.)
-                    t_y = np.random.uniform(-5.25, -4.)
-                o_w = np.random.uniform(3.8, 4.2)
-            else:
-                if np.random.randint(0, 1) == 0:
-                    p_x = np.random.uniform(-4.25, -3.75)
-                    p_y = np.random.uniform(-5.25, -4.75)
-                else:
-                    p_x = np.random.uniform(0., 4.)
-                    p_y = np.random.uniform(-5.25, -4.)
-                t_x = np.random.uniform(-0.5, 5.5)
-                t_y = np.random.uniform(-0.5, 2.)
-                o_w = np.random.uniform(1.3, 1.7)
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': np.random.uniform(1.3, 1.7), 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-        elif env == 1:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(12., 16.5)
-                p_y = np.random.uniform(1.75, 2.25)
-                t_x = np.random.uniform(12., 16.5)
-                t_y = np.random.uniform(-5.75, -6.25)
-                o_z, o_w = np.random.uniform(1.3, 1.7), np.random.uniform(-1.3, -1.7)
-            else:
-                p_x = np.random.uniform(12., 16.5)
-                p_y = np.random.uniform(-5.75, -6.25)
-                t_x = np.random.uniform(12.0, 16.5)
-                t_y = np.random.uniform(.75, 2.25)
-                o_z, o_w = np.random.uniform(3.2, 3.6), np.random.uniform(1.3, 1.7)
-
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-        elif env == 2:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(0., 7.)
-                p_y = np.random.uniform(5., 11.)
-                t_x = np.random.uniform(10., 19.)
-                t_y = np.random.uniform(5., 11.)
-                o_z, o_w = np.random.uniform(1.3, 1.7), np.random.uniform(3.8, 4.2)
-            else:
-                p_x = np.random.uniform(10., 19.)
-                p_y = np.random.uniform(5., 11.)
-                t_x = np.random.uniform(0., 7.)
-                t_y = np.random.uniform(5., 11.)
-                o_z, o_w = np.random.uniform(3.2, 3.6), np.random.uniform(1.3, 1.7)
-
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-    def _get_ini_and_target_position_env3_test(self):
-        p_x, p_y, p_z = 0.0, 0.0, 0.05
-        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if True:
-            p_x = np.random.uniform(-3.9, -4.1)
-            p_y = np.random.uniform(-4.9, -5.1)
-
-            t_x = 0.
-            t_y = 0.
-        else:
-            p_x = np.random.uniform(-0.1, 0.1)
-            p_y = np.random.uniform(-0.1, 0.1)
-            t_x = -4.
-            t_y = -5.
-
-        o_w = np.random.uniform(1.3, 1.7)
-        ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                   'o_y': o_y, 'o_z': np.random.uniform(1.3, 1.7), 'o_w': o_w}
-        target_pos = (t_x, t_y)
-        return ini_pos, target_pos
-
-    def _get_ini_and_target_position_env4(self):
-
-        env = np.random.randint(0, 2)
-        p_x, p_y, p_z = 0.0, 0.0, 0.05
-        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if env == 0:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(-4, -5.)
-                p_y = np.random.uniform(-10.5, -11.5)
-                t_x = np.random.uniform(-2., 0.)
-                t_y = np.random.uniform(-6., -7.)
-
-                o_z = np.random.uniform(3., 3.3)
-                o_w = np.random.uniform(3., 3.3)
-            else:
-                p_x = np.random.uniform(-2., 0.)
-                p_y = np.random.uniform(-6., -7.)
-                t_x = np.random.uniform(-4, -5.)
-                t_y = np.random.uniform(-10.5, -11.5)
-
-                o_z = 0.
-                o_w = np.random.uniform(1.4, 1.6)
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-        elif env == 1:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(4.5, 6.)
-                p_y = np.random.uniform(-6., -7.)
-                t_x = np.random.uniform(4.5, 6.)
-                t_y = np.random.uniform(-10., -11.5)
-
-                o_z = 0.
-                o_w = -np.random.uniform(1.4, 1.6)
-            else:
-                p_x = np.random.uniform(4.5, 6.)
-                p_y = np.random.uniform(-10., -11.5)
-                t_x = np.random.uniform(4.5, 6.)
-                t_y = np.random.uniform(-6., -7.)
-
-                o_z = np.random.uniform(3., 3.3)
-                o_w = np.random.uniform(3., 3.3)
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-        elif env == 2:
-            choice = np.random.randint(0, 2)
-            if choice == 0:
-                p_x = np.random.uniform(-3., 0.)
-                p_y = np.random.uniform(2., -3.)
-                t_x = np.random.uniform(5., 7.)
-                t_y = np.random.uniform(0., -3.)
-
-                o_z, o_w = np.random.uniform(1.3, 1.7), np.random.uniform(3.8, 4.2)
-            else:
-                p_x = np.random.uniform(5., 7.)
-                p_y = np.random.uniform(0., -3.)
-                t_x = np.random.uniform(-3., 0.)
-                t_y = np.random.uniform(2., -3.)
-
-                o_z, o_w = np.random.uniform(3.2, 3.6), np.random.uniform(1.3, 1.7)
-            ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                       'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
-            target_pos = (t_x, t_y)
-            return ini_pos, target_pos
-
-    def _get_ini_and_target_position_env4_test(self):
+    def _get_ini_and_target_position(self):
 
         p_x, p_y, p_z = 0.0, 0.0, 0.05
         o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        if False:
-            p_x = np.random.uniform(-3.4, -3.6)
-            p_y = np.random.uniform(-9.4, -9.6)
-            t_x = -1.0
-            t_y = -6.5
-        else:
-            p_x = np.random.uniform(-0.9, -1.1)
-            p_y = np.random.uniform(-6.4, -6.6)
-            t_x = -3.5
-            t_y = -9.5
-
-        o_z = 0.
-        o_w = -1.5
-        ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
-                   'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
-        target_pos = (t_x, t_y)
-        return ini_pos, target_pos
-
-    def _get_ini_and_target_position_new(self):
-
-        p_x, p_y, p_z = 0.0, 0.0, 0.05
-        o_x, o_y, o_z, o_w = 0.0, 0.0, 0.75, 0.75
-        p_x, p_y = self.starting_pos[0] + np.random.uniform(-0.2, 0.2), self.starting_pos[1] + np.random.uniform(-0.2, 0.2)
+        p_x, p_y = self.starting_pos[0] + np.random.uniform(-0.2, 0.2), self.starting_pos[1] + np.random.uniform(-0.2,
+                                                                                                                 0.2)
         t_x, t_y = self.target_pos[0], self.target_pos[1]
         o_z, o_w = self.start_orientation[0], self.start_orientation[1]
         ini_pos = {'p_x': p_x, 'p_y': p_y, 'p_z': p_z, 'o_x': o_x,
                    'o_y': o_y, 'o_z': o_z, 'o_w': o_w}
         target_pos = (t_x, t_y)
         return ini_pos, target_pos
-
 
     def reset_position(self):
         if not self.initial_position:
@@ -455,7 +145,7 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         super(ScoutingEnv, self).reset()
         self.obs_images = np.zeros((84, 84, 4))
         self.cumulated_steps = 0
-        self.initial_position, self.target_p = self._get_ini_and_target_position_new()
+        self.initial_position, self.target_p = self._get_ini_and_target_position()
         self.last_p_x = self.initial_position['p_x']
         self.last_p_y = self.initial_position['p_y']
 
@@ -481,9 +171,6 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         """
         self._check_all_sensors_ready()
         return True
-
-    # virtual methods
-    # ----------------------------
 
     def _check_all_sensors_ready(self):
         rospy.logdebug("START ALL SENSORS READY")
@@ -540,27 +227,6 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
 
         rospy.logdebug("All Publishers READY")
 
-    def _set_init_pose(self):
-        """Sets the Robot in its init pose
-        """
-        raise NotImplementedError()
-
-    def _init_env_variables(self):
-        """Inits variables needed to be initialised each time we reset at the start
-        of an episode.
-        """
-        raise NotImplementedError()
-
-    def _compute_reward(self, observations, done):
-        """Calculates the reward to give based on the observations given.
-        """
-        raise NotImplementedError()
-
-    def _set_action(self, action):
-        """Applies the given action to the simulation.
-        """
-        raise NotImplementedError()
-
     def _encode_state(self, laser_scan, rel_target_position):
         image = self.laserscan_to_image(laser_scan)
         robot = np.zeros((self.img_size, self.img_size, 3), dtype=np.uint8)
@@ -577,30 +243,18 @@ class ScoutingEnv(robot_gazebo_env.RobotGazeboEnv):
         if self.output_folder != '':
             output_folder = '{}/img_logs'.format(self.output_folder)
             Path(output_folder).mkdir(parents=True, exist_ok=True)
-            plt.imsave('{}/{}_obs_{}.png'.format(output_folder, self.img_prefix, self.obs_save_ind + 1000000), image, cmap='viridis')
+            plt.imsave('{}/{}_obs_{}.png'.format(output_folder, self.img_prefix, self.obs_save_ind + 1000000), image,
+                       cmap='viridis')
         return image
 
     def _process_scan(self):
         ranges = self.get_laser_scan().astype('float32') - 0.1
-        # ranges = ranges[250:-250]
         ranges = np.clip(ranges, 0.0, 8.0) / 8.
         ranges_chunks = np.array_split(ranges, 20)
         ranges_mean = np.array([np.min(chunk) for chunk in ranges_chunks])
         return ranges_mean.reshape(20, )
 
-    def _get_obs_old(self):
-
-        scan = self._process_scan()
-        pos_x, pos_y = self._get_pos_x_y()
-        target_x, target_y = self.target_p[0], self.target_p[1]
-        dx = pos_x - target_x
-        dy = pos_y - target_y
-        dist = np.array([dx, dy]).reshape(2, )
-        dist = np.clip(dist, -19.99, 19.99)
-        return (scan, dist)
-
     def _get_obs(self):
-
         def pol2cart(rho, phi):
             x = rho * np.cos(phi)
             y = rho * np.sin(phi)

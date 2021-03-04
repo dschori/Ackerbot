@@ -30,7 +30,6 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
         self.rate = None
         self.set_sleep_rate(100)
         self.number_of_sleeps = 25
-        #self.number_of_sleeps = 15
         super(ScoutingDiscreteTask, self).__init__()
 
     def set_sleep_rate(self, hz):
@@ -56,10 +55,8 @@ class ScoutingDiscreteTask(scouting_env.ScoutingEnv):
 
     def _set_action(self, action):
         self.cumulated_steps += 1
-        #self._update_dyn1()
         steering_angle = 0
         speed = self.speed
-        #speed = self.speed + np.random.normal(0., 0.01)
         speed = np.clip(speed, 0.1, 1.)
         if action == 0:  # right
             steering_angle = self.right_steering

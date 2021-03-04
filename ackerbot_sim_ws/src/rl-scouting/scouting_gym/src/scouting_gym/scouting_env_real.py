@@ -61,7 +61,6 @@ class ScoutingEnvInference(gym.Env):
         self.dyn1_x_max = 1.2
         self.dyn1_last = 0.0
         self.dyn1_state = 0
-        # self._check_publishers_connection()
 
         self.cumulated_steps = 0
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(self.img_size, self.img_size, 4))
@@ -69,7 +68,7 @@ class ScoutingEnvInference(gym.Env):
         self.rate = None
         self.speed = 1
         self.set_sleep_rate(100)
-        self.number_of_sleeps = 5
+        self.number_of_sleeps = 25
         self.target_p = (-3.3, -1.7)
         self.last_d = 10.
         self.steerings = []
@@ -96,7 +95,7 @@ class ScoutingEnvInference(gym.Env):
             if d < self.last_d:
                 dt = self.last_d - d
                 self.last_d = d
-                reward1 = dt*2
+                reward1 = dt * 2
             else:
                 reward1 = -0.001
 
@@ -177,8 +176,8 @@ class ScoutingEnvInference(gym.Env):
         while self.tfmessage is None and not rospy.is_shutdown():
             try:
                 self.tfmessage = rospy.wait_for_message('/tf',
-                                                   TFMessage,
-                                                   timeout=1.0)
+                                                        TFMessage,
+                                                        timeout=1.0)
             except:
                 rospy.logerr("TF not ready yet, retrying for getting tf msg")
 
@@ -235,7 +234,7 @@ class ScoutingEnvInference(gym.Env):
         image = np.clip(image, 0.0, 1.0)
 
         # if np.random.rand() < 0.5:
-        plt.imsave('{}/img_logs/{}_obs_{}.png'.format(Path.home(), self.img_prefix, self.obs_save_ind+1000000), image)
+        plt.imsave('{}/img_logs/{}_obs_{}.png'.format(Path.home(), self.img_prefix, self.obs_save_ind + 1000000), image)
         return image
 
     def _get_obs(self):
@@ -381,13 +380,6 @@ class ScoutingEnvInference(gym.Env):
 
         ranges = np.clip(ranges, 0.0, max_lidar_range)
 
-        #ranges_chungs = np.array_split(ranges, 100)
-        #tmp = []
-        #ranges = [np.ones((len(chunk), ))*np.min(chunk) for chunk in ranges_chungs]
-        #ranges = np.concatenate(ranges)
-        #print(ranges.shape)
-
-        #ranges = savgol_filter(ranges, 51, 3)
         # Calculate the number of points in array of ranges
         num_pts = len(ranges)
         # Create Array for extracting X,Y points of each data point
@@ -417,7 +409,7 @@ class ScoutingEnvInference(gym.Env):
                         blank_image[pix_y, pix_x] = [0, 0, 0]
                     except IndexError:
                         break
-                    b_i+=0.2
+                    b_i += 0.2
 
         blank_image = cv2.rotate(blank_image, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE)
         blank_image = cv2.resize(blank_image, (84, 84), interpolation=cv2.INTER_AREA)
