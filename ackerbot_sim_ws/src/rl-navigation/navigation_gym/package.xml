@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>scouting_gym</name>
+  <name>navigation_gym</name>
   <version>0.0.0</version>
-  <description>scouting_gym package</description>
+  <description>navigation_gym package</description>
 
-  <maintainer email="aray@todo.todo">aray</maintainer>
+  <maintainer email="todo@todo.todo">aray</maintainer>
 
   <license>TODO</license>
 
@@ -12,9 +12,7 @@
   
   <build_depend>racecar_gazebo</build_depend>
 
-  <build_depend>openai_ros</build_depend>
   <build_depend>rospy</build_depend>
-  <exec_depend>openai_ros</exec_depend>
   <exec_depend>rospy</exec_depend>
 
   <export>

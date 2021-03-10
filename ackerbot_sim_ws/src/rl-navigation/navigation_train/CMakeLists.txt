@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(scouting_train)
+project(navigation_train)
 
 find_package(catkin REQUIRED COMPONENTS
-  scouting_gym
+  navigation_gym
   rospy
 )
 

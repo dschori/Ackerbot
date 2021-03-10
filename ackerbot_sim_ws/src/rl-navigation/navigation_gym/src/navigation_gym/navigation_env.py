@@ -6,7 +6,7 @@ import rospy
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.srv import SetModelState
 
-from openai_ros import robot_gazebo_env
+from navigation_gym import robot_gazebo_env
 from sensor_msgs.msg import LaserScan, CompressedImage
 from nav_msgs.msg import Odometry
 from cv_bridge import CvBridge, CvBridgeError
