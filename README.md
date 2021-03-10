@@ -12,13 +12,14 @@ Experiments have shown that the proposed method does not reach the accuracy of t
 
 
 | Experiments   | Description   | Video  |
-| ------------- |:-------------:| ----- |
-| Experiment 1  |asd| ![alt text](docs/Exp1_Screenshot.PNG)|
-| Experiment 2  |asd|![alt text](docs/Exp1_Screenshot.PNG)|
-| Experiment 3  |asd|![alt text](docs/Exp1_Screenshot.PNG)|
-| Experiment 4  |asd|![alt text](docs/Exp1_Screenshot.PNG)|
-| Experiment 5  |asd|![alt text](docs/Exp1_Screenshot.PNG)|
+| ------------- |:-------------| ----- |
+| Experiment 1  |This experiment visually shows the trajectories chosen by the RL-Agent at different training steps regarding a given starting and target position.| [![alt text](docs/Exp1_Screenshot.PNG)](https://youtu.be/PsYV-62rwDA )|
+| Experiment 2  |This experiment is used to determine the reliability of arriving at the target and the distribution of the distance to the target over the different runs in simulation regarding the RL-Agent. In TrainEnv-1 and ValEnv-1, 15 runs are made in the forward direction and 15 runs in backward direction.|![alt text](docs/Exp2a_Screenshot.PNG)|
+| Experiment 3  |asd|![alt text](docs/Exp3_Screenshot.PNG)|
+| Experiment 4  |asd|![alt text](docs/Exp4_Screenshot.PNG)|
+| Experiment 5  |asd|![alt text](docs/Exp5_Screenshot.PNG)|
 
+[![Watch the video](https://img.youtube.com/vi/PsYV-62rwDA/maxresdefault.jpg)](https://youtu.be/PsYV-62rwDA)
 ## Documentation:
 
 TODO
