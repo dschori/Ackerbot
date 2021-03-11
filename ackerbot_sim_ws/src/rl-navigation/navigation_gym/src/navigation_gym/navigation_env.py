@@ -213,8 +213,6 @@ class NavigationEnv(robot_gazebo_env.RobotGazeboEnv):
         self.left_steering = np.random.uniform(0.35, 1.0)
         self.right_steering = np.random.uniform(-0.35, -1.0)
         self.speed = 0.6
-        self.left_steering = 0.7
-        self.right_steering = -0.7
 
         return self._get_obs()
 
