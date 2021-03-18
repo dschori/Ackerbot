@@ -16,7 +16,7 @@ required.
 
 Full Documentation: **[Master Thesis](docs/SchoriDamianMasterThesis.pdf)**
 
-## Experiments:
+### Videos:
 
 |     **Training Process:**    |    **Trained Agent in Real-World:**        |
 | ------------- |:-------------:|
@@ -31,7 +31,7 @@ Full Documentation: **[Master Thesis](docs/SchoriDamianMasterThesis.pdf)**
 | ![alt text](docs/traj_rl.PNG)|
 
 
-### Videos:
+## Experiments:
 
 | **Experiment**   | **Description**   | **Video**  |
 | ------------- |:------| ----- |
