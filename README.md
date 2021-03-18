@@ -11,7 +11,12 @@ Evaluation experiments have shown that the proposed method is outperformed by SL
 of pose accuracy, location precision and the reliability of achieving the desired target. Though, the developed
 procedure offers potential in cases where prior mapping is not possible and exploration capability of a vehicle is 
 required.
- 
+
+## Documentation:
+
+Full Documentation: **[Master Thesis](docs/SchoriDamianMasterThesis.pdf)**
+
+## Experiments:
 
 |     **Training Process:**    |    **Trained Agent in Real-World:**        |
 | ------------- |:-------------:|
@@ -25,11 +30,8 @@ required.
 | ------------- |
 | ![alt text](docs/traj_rl.PNG)|
 
-## Documentation:
 
-Full Documentation: **[Master Thesis](docs/SchoriDamianMasterThesis.pdf)**
-
-### Experiments:
+### Videos:
 
 | **Experiment**   | **Description**   | **Video**  |
 | ------------- |:------| ----- |
