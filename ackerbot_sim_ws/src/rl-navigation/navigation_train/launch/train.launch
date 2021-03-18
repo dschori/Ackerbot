@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <master auto="start"/>
+
+  <node pkg="navigation_train" name="train" type="train.py" output="screen"></node>
+
+</launch>

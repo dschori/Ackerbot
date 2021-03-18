@@ -1,0 +1,31 @@
+!!python/object/new:dynamic_reconfigure.encoding.Config
+dictitems:
+  enable_auto_exposure: true
+  enable_dynamic_calibration: true
+  enable_map_preservation: false
+  enable_mapping: true
+  enable_pose_jumping: true
+  enable_relocalization: true
+  exposure: 200.0
+  gain: 1.0
+  groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+    dictitems:
+      enable_auto_exposure: true
+      enable_dynamic_calibration: true
+      enable_map_preservation: false
+      enable_mapping: true
+      enable_pose_jumping: true
+      enable_relocalization: true
+      exposure: 200.0
+      gain: 1.0
+      groups: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      id: 0
+      name: Default
+      parameters: !!python/object/new:dynamic_reconfigure.encoding.Config
+        state: []
+      parent: 0
+      state: true
+      type: ''
+    state: []
+state: []

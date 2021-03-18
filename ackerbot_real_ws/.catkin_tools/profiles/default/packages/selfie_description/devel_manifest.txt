@@ -1,0 +1,5 @@
+robot_pkg_backup/src/selfie_simulator/selfie_description
+/home/dschori/MasterThesis/catkin_ws/devel/.private/selfie_description/cmake.lock /home/dschori/MasterThesis/catkin_ws/devel/./cmake.lock
+/home/dschori/MasterThesis/catkin_ws/devel/.private/selfie_description/share/selfie_description/cmake/selfie_descriptionConfig-version.cmake /home/dschori/MasterThesis/catkin_ws/devel/share/selfie_description/cmake/selfie_descriptionConfig-version.cmake
+/home/dschori/MasterThesis/catkin_ws/devel/.private/selfie_description/share/selfie_description/cmake/selfie_descriptionConfig.cmake /home/dschori/MasterThesis/catkin_ws/devel/share/selfie_description/cmake/selfie_descriptionConfig.cmake
+/home/dschori/MasterThesis/catkin_ws/devel/.private/selfie_description/lib/pkgconfig/selfie_description.pc /home/dschori/MasterThesis/catkin_ws/devel/lib/pkgconfig/selfie_description.pc

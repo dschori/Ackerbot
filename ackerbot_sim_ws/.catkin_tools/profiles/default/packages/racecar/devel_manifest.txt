@@ -1,0 +1,5 @@
+racecar/racecar
+/home/dschori/Ackerbot/ackerbot_sim_ws/devel/.private/racecar/cmake.lock /home/dschori/Ackerbot/ackerbot_sim_ws/devel/./cmake.lock
+/home/dschori/Ackerbot/ackerbot_sim_ws/devel/.private/racecar/share/racecar/cmake/racecarConfig-version.cmake /home/dschori/Ackerbot/ackerbot_sim_ws/devel/share/racecar/cmake/racecarConfig-version.cmake
+/home/dschori/Ackerbot/ackerbot_sim_ws/devel/.private/racecar/share/racecar/cmake/racecarConfig.cmake /home/dschori/Ackerbot/ackerbot_sim_ws/devel/share/racecar/cmake/racecarConfig.cmake
+/home/dschori/Ackerbot/ackerbot_sim_ws/devel/.private/racecar/lib/pkgconfig/racecar.pc /home/dschori/Ackerbot/ackerbot_sim_ws/devel/lib/pkgconfig/racecar.pc

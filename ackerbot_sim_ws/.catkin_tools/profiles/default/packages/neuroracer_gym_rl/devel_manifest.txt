@@ -1,0 +1,5 @@
+rl-scouting/scouting_train
+/home/dschori/MasterThesis/ackerbot_sim_ws/devel/.private/neuroracer_gym_rl/cmake.lock /home/dschori/MasterThesis/ackerbot_sim_ws/devel/./cmake.lock
+/home/dschori/MasterThesis/ackerbot_sim_ws/devel/.private/neuroracer_gym_rl/share/neuroracer_gym_rl/cmake/neuroracer_gym_rlConfig.cmake /home/dschori/MasterThesis/ackerbot_sim_ws/devel/share/neuroracer_gym_rl/cmake/neuroracer_gym_rlConfig.cmake
+/home/dschori/MasterThesis/ackerbot_sim_ws/devel/.private/neuroracer_gym_rl/share/neuroracer_gym_rl/cmake/neuroracer_gym_rlConfig-version.cmake /home/dschori/MasterThesis/ackerbot_sim_ws/devel/share/neuroracer_gym_rl/cmake/neuroracer_gym_rlConfig-version.cmake
+/home/dschori/MasterThesis/ackerbot_sim_ws/devel/.private/neuroracer_gym_rl/lib/pkgconfig/neuroracer_gym_rl.pc /home/dschori/MasterThesis/ackerbot_sim_ws/devel/lib/pkgconfig/neuroracer_gym_rl.pc

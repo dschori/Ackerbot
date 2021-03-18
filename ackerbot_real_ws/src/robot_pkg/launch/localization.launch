@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!--  ****** Map Server *****  -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(find robot_pkg)/maps/home_1.yaml" output="screen">
+                <param name="frame_id" value="map"/>
+	</node>
+
+    <!--  ****** AMCL Localization *****  -->
+	<node pkg="amcl" type="amcl" name="amcl" output="screen">
+		<rosparam file="$(find robot_pkg)/cfg/amcl_params.yaml" command="load" />
+	    <param name="initial_pose_x"        value="0.3"/>
+		<param name="initial_pose_y"        value="-0.7"/>
+		<param name="initial_pose_a"        value="0.35"/>
+	</node>
+
+</launch>

@@ -1,0 +1,10 @@
+robot_pkg
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/cmake.lock /home/dschori/MasterThesis/ackerbot_real_ws/devel/./cmake.lock
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/share/robot_pkg/cmake/robot_pkgConfig.cmake /home/dschori/MasterThesis/ackerbot_real_ws/devel/share/robot_pkg/cmake/robot_pkgConfig.cmake
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/share/robot_pkg/cmake/robot_pkgConfig-version.cmake /home/dschori/MasterThesis/ackerbot_real_ws/devel/share/robot_pkg/cmake/robot_pkgConfig-version.cmake
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/lib/pkgconfig/robot_pkg.pc /home/dschori/MasterThesis/ackerbot_real_ws/devel/lib/pkgconfig/robot_pkg.pc
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/lib/robot_pkg/drive_controller.py /home/dschori/MasterThesis/ackerbot_real_ws/devel/lib/robot_pkg/drive_controller.py
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/lib/robot_pkg/fixed_frame.py /home/dschori/MasterThesis/ackerbot_real_ws/devel/lib/robot_pkg/fixed_frame.py
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/lib/robot_pkg/drive_controller2.py /home/dschori/MasterThesis/ackerbot_real_ws/devel/lib/robot_pkg/drive_controller2.py
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/lib/robot_pkg/cmake.lock /home/dschori/MasterThesis/ackerbot_real_ws/devel/lib/robot_pkg/cmake.lock
+/home/dschori/MasterThesis/ackerbot_real_ws/devel/.private/robot_pkg/lib/robot_pkg/cmd_vel_to_ackermann_drive.py /home/dschori/MasterThesis/ackerbot_real_ws/devel/lib/robot_pkg/cmd_vel_to_ackermann_drive.py
