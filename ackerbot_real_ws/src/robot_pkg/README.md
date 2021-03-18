@@ -22,7 +22,7 @@ Note, the image does only work on ARM- Architecture!
 
 To copy the build files and directories to the local file system.
 
-1. Build the workspace with: `catkin build -j2`
+1. Build the workspace inside the container with: `catkin build -j2`
 2. Then, copy the build files inside the container to the local file system with:
 
 ```
