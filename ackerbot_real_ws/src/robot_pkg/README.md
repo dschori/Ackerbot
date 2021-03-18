@@ -22,6 +22,9 @@ Note, the image does only work on ARM- Architecture!
 
 To copy the build files and directories to the local file system.
 
+1. Build the workspace with: `catkin build -j2`
+2. Then, copy the build files inside the container to the local file system with:
+
 ```
 sudo docker run -d --name ackerbot dschori/ackerbot:real
 
@@ -30,8 +33,6 @@ sudo docker cp ackerbot:/workspace/catkin_ws/devel ~/Ackerbot/ackerbot_real_ws/d
 sudo docker cp ackerbot:/workspace/catkin_ws/logs ~/Ackerbot/ackerbot_real_ws/logs  
 
 sudo docker rm -f ackerbot  
-
-catkin build -j2  
 ```
 ### Then:
 ```
