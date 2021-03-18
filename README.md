@@ -31,7 +31,7 @@ Full Documentation: **[Master Thesis](docs/SchoriDamianMasterThesis.pdf)**
 
 ### Experiments:
 
-| Experiment   | Description   | Video  |
+| **Experiment**   | **Description**   | **Video**  |
 | ------------- |:------| ----- |
 | Exp. 1  |This experiment visually shows the trajectories chosen by the RL-Agent at different training steps regarding a given starting and target position.| [![alt text](docs/Exp1_Screenshot.PNG)](https://youtu.be/Hooh3NiFTTs )|
 | Exp. 2 Train |This experiment is used to determine the reliability of arriving at the target and the distribution of the distance to the target over the different runs in simulation regarding the RL-Agent. In TrainEnv-1 and ValEnv-1, 15 runs are made in the forward direction and 15 runs in backward direction.|[![alt text](docs/Exp2a_Screenshot.PNG)](https://youtu.be/J4DIF1tF5_M )|
