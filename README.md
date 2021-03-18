@@ -16,8 +16,6 @@ required.
 
 Full Documentation: **[Master Thesis](docs/SchoriDamianMasterThesis.pdf)**
 
-### Videos:
-
 |     **Training Process:**    |    **Trained Agent in Real-World:**        |
 | ------------- |:-------------:|
 | [![alt text](docs/training-process.gif)](https://youtu.be/Hooh3NiFTTs ) | [![alt text](docs/rl-real-world.gif)](https://youtu.be/mdwHY7vHC_I ) |
