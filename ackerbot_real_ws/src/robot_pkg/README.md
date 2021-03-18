@@ -95,7 +95,15 @@ In a new Terminal run:
 ```
 roslaunch robot_pkg localization.launch
 ```
-### 3. Start Rviz
+### 3. Start the TEB Navigation:
+
+This File launches the [TEB Navigation](https://github.com/rst-tu-dortmund/teb_local_planner) packages 
+
+In a new Terminal run: 
+```
+roslaunch robot_pkg teb_navigation.launch
+```
+### 4. Start Rviz
 
 Start RVIZ with the [config file](/ackerbot_real_ws/src/robot_pkg/config/rviz_config.rviz) and set a "2D Nav Goal"
 
